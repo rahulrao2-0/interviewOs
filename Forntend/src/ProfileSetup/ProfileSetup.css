@@ -1,0 +1,430 @@
+@import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:wght@400;500;600;700;800&display=swap');
+
+/* ── Reset & Base ── */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: 'DM Sans', 'Segoe UI', sans-serif;
+}
+
+/* ── Page ── */
+.ps-page {
+  min-height: 100vh;
+  background: #fff5f5;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 40px 16px 80px;
+  position: relative;
+  overflow: hidden;
+}
+
+/* ── Background Blobs ── */
+.ps-blob {
+  position: fixed;
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.ps-blob--1 {
+  top: -120px;
+  left: -120px;
+  width: 400px;
+  height: 400px;
+  background: radial-gradient(circle, #fecaca55, transparent 70%);
+}
+
+.ps-blob--2 {
+  bottom: -100px;
+  right: -100px;
+  width: 350px;
+  height: 350px;
+  background: radial-gradient(circle, #fee2e244, transparent 70%);
+}
+
+/* ── Container ── */
+.ps-container {
+  width: 100%;
+  max-width: 780px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 32px;
+  position: relative;
+  z-index: 1;
+}
+
+/* ── Header ── */
+.ps-header {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+.ps-badge {
+  background: #1e293b;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  padding: 5px 14px;
+  border-radius: 20px;
+  display: inline-block;
+}
+
+.ps-title {
+  font-size: clamp(2rem, 5vw, 3rem);
+  font-weight: 800;
+  color: #0f172a;
+  line-height: 1.1;
+  font-family: 'DM Serif Display', Georgia, serif;
+}
+
+.ps-title-accent {
+  background: linear-gradient(135deg, #dc2626, #f87171);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.ps-subtitle {
+  color: #64748b;
+  font-size: 15px;
+}
+
+/* ── Role Cards ── */
+.ps-role-row {
+  display: flex;
+  gap: 20px;
+  width: 100%;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.ps-role-card {
+  flex: 1 1 220px;
+  max-width: 280px;
+  border-radius: 18px;
+  border: 2px solid #e2e8f0;
+  padding: 28px 24px 24px;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  text-align: center;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  user-select: none;
+  background: #fff;
+}
+
+.ps-role-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px #0000001a;
+}
+
+.ps-role-card.selected {
+  border-color: #dc2626;
+  background: #fff1f2;
+  box-shadow: 0 0 0 2px #dc2626, 0 8px 32px #dc262622;
+  transform: translateY(-4px);
+}
+
+.ps-role-emoji {
+  width: 60px;
+  height: 60px;
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 28px;
+  background: #f1f5f9;
+  transition: background 0.25s ease;
+}
+
+.ps-role-card.selected .ps-role-emoji {
+  background: #dc2626;
+}
+
+.ps-role-label {
+  font-size: 18px;
+  font-weight: 800;
+  color: #1e293b;
+  font-family: 'DM Serif Display', Georgia, serif;
+  transition: color 0.25s;
+}
+
+.ps-role-card.selected .ps-role-label {
+  color: #dc2626;
+}
+
+.ps-role-desc {
+  font-size: 13px;
+  color: #64748b;
+  line-height: 1.5;
+}
+
+.ps-selected-badge {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  background: #dc2626;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: 20px;
+}
+
+/* ── Form Card ── */
+.ps-form-card {
+  width: 100%;
+  background: #fff;
+  border-radius: 24px;
+  padding: 32px;
+  box-shadow: 0 4px 40px #0000000f;
+  border: 1px solid #e2e8f0;
+  transition: opacity 0.35s ease, transform 0.35s ease;
+}
+
+.ps-form-card.animating {
+  opacity: 0;
+  transform: translateY(20px);
+}
+
+.ps-form-card.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.ps-form-header {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 28px;
+}
+
+.ps-form-title {
+  font-size: 20px;
+  font-weight: 800;
+  color: #dc2626;
+  font-family: 'DM Serif Display', Georgia, serif;
+}
+
+.ps-form-sub {
+  font-size: 13px;
+  color: #94a3b8;
+}
+
+/* ── Form Grid ── */
+.ps-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 20px;
+  margin-bottom: 28px;
+}
+
+.ps-field-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.ps-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #334155;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.ps-label-icon {
+  font-size: 15px;
+}
+
+.ps-input {
+  padding: 10px 14px;
+  border-radius: 10px;
+  border: 1.5px solid #e2e8f0;
+  font-size: 14px;
+  color: #0f172a;
+  outline: none;
+  background: #f8fafc;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  width: 100%;
+  font-family: 'DM Sans', 'Segoe UI', sans-serif;
+}
+
+.ps-input::placeholder {
+  color: #cbd5e1;
+}
+
+.ps-input:focus {
+  border-color: #dc2626;
+  box-shadow: 0 0 0 3px #dc262622;
+}
+
+/* ── Submit Button ── */
+.ps-submit-btn {
+  width: 100%;
+  padding: 14px 0;
+  border: none;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #dc2626, #f87171);
+  color: #fff;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  letter-spacing: 0.5px;
+  transition: transform 0.15s, box-shadow 0.15s;
+  font-family: 'DM Sans', 'Segoe UI', sans-serif;
+}
+
+.ps-submit-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px #0002;
+}
+
+.ps-submit-btn:active {
+  transform: translateY(0);
+}
+
+/* ── Success Card ── */
+.ps-success-page {
+  min-height: 100vh;
+  background: #fff5f5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 16px;
+  font-family: 'DM Sans', 'Segoe UI', sans-serif;
+}
+
+.ps-success-card {
+  background: #fff;
+  border-radius: 24px;
+  padding: 60px 40px;
+  text-align: center;
+  box-shadow: 0 8px 40px #0000001a;
+  max-width: 420px;
+  width: 100%;
+}
+
+.ps-success-icon {
+  font-size: 56px;
+  margin-bottom: 16px;
+}
+
+.ps-success-title {
+  font-size: 28px;
+  font-weight: 800;
+  color: #0f172a;
+  font-family: 'DM Serif Display', Georgia, serif;
+  margin: 0 0 8px;
+}
+
+.ps-success-sub {
+  color: #64748b;
+  font-size: 15px;
+  line-height: 1.6;
+  margin-bottom: 0;
+}
+
+.ps-success-sub span {
+  color: #dc2626;
+  font-weight: 700;
+}
+
+.ps-start-over-btn {
+  margin-top: 28px;
+  padding: 14px 32px;
+  border: none;
+  border-radius: 12px;
+  background: #1e293b;
+  color: #fff;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform 0.15s, box-shadow 0.15s;
+  font-family: 'DM Sans', 'Segoe UI', sans-serif;
+}
+
+.ps-start-over-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px #0002;
+}
+
+/* ── Field entrance animation ── */
+@keyframes fieldIn {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.field-in {
+  animation: fieldIn 0.4s ease both;
+}
+
+/* ── Responsive ── */
+@media (max-width: 480px) {
+  .ps-form-card {
+    padding: 20px 16px;
+  }
+
+  .ps-success-card {
+    padding: 40px 20px;
+  }
+
+  .ps-grid {
+    grid-template-columns: 1fr;
+  }
+}
+.ps-skip-wrap {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  max-width: 420px;
+}
+
+.ps-skip-line {
+  flex: 1;
+  height: 1px;
+  background: #e2e8f0;
+}
+
+.ps-skip-btn {
+  background: none;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 20px;
+  color: #94a3b8;
+  font-size: 13px;
+  font-weight: 600;
+  padding: 6px 20px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.2s ease;
+  font-family: 'DM Sans', 'Segoe UI', sans-serif;
+}
+
+.ps-skip-btn:hover {
+  border-color: #dc2626;
+  color: #dc2626;
+  background: #fff1f2;
+}

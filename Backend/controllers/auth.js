@@ -1,0 +1,254 @@
+import db from "../config/db.js";
+import ExpressError from "../ExpressError.js";
+import { createToken , verfiyToken } from "../utils/jwt.js";
+import redis from "../Redis.js";
+import sendEmail from "../utils/SendEmail.js";
+
+import bcrypt from "bcryptjs";
+
+export const Signup = async (req, res, next) => {
+  console.log("api hit");
+  try {
+    const { username, email, password } = req.body;
+
+    // Validation
+    if (!username || !email || !password) {
+      return next(new ExpressError(400, "Username, email and password are required"));
+    }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      return next(new ExpressError(400, "Please provide a valid email address"));
+    }
+    if (password.length < 8) {
+      return next(new ExpressError(400, "Password must be at least 8 characters"));
+    }
+
+    // ✅ Check BOTH username AND email before hashing — correct column names
+    const [existing] = await db.execute(
+      "SELECT user_id, username, email FROM users WHERE username = ? OR email = ?",
+      [username.trim(), email.trim().toLowerCase()]
+    );
+
+    if (existing.length > 0) {
+      const taken = existing[0];
+      if (taken.username === username.trim()) {
+        return next(new ExpressError(409, "Username already taken"));
+      }
+      return next(new ExpressError(409, "Email already exists"));
+    }
+
+    // ✅ Hash AFTER duplicate check
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    
+    
+
+    const otp = Math.floor(1000 + Math.random() * 9000).toString();
+
+    console.log(otp);
+
+    await redis.set(`otp:${email}`, otp , "EX", 600);
+     // Expire after 10 minutes
+
+
+      await sendEmail({
+      to: email,
+      subject: "Verify your email - interviewOS",
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 480px; margin: auto;">
+          <h2>Welcome to interviewOS 🌍</h2>
+          <p>Use the OTP below to verify your email address:</p>
+          <h1 style="letter-spacing: 8px; color: #4F46E5;">${otp}</h1>
+          <p>This OTP will expire in <strong>10 minutes</strong>.</p>
+          <p>If you didn't sign up, ignore this email.</p>
+        </div>
+      `
+    });
+
+       const pendingUser = {
+       username: username.trim(),
+       email: email.trim().toLowerCase(),
+       password: hashedPassword,
+       role: "user",
+      };
+
+    await redis.set(
+    `pendingUser:${email}`,
+     JSON.stringify(pendingUser),
+     "EX",
+     600
+     );
+
+    
+
+    res.status(201).json({
+      success: true,
+      message: "User signed up successfully!",
+    });
+
+  } catch (err) {
+    console.log(err); // ✅ Always log the actual error during development
+    if (err.code === "ER_DUP_ENTRY") {
+      return next(new ExpressError(409, "Username or email already exists"));
+    }
+    return next(new ExpressError(500, "Internal Server Error"));
+  }
+};
+export const Login = async(req,res,next)=>{
+  console.log("Login API hit")
+    try{
+        const {username,password}=req.body;
+
+        if (!username || !password) {
+        return next(new ExpressError(400, 'Username and password are required'));
+       }
+
+        const [existing] = await db.execute(
+            'SELECT user_id, password FROM users WHERE username = ?',
+            [username]
+        )
+
+        console.log("Existing user in login route",existing)
+
+        // console.log("user in login route",existing)
+        if(existing.length===0){
+                return next(new ExpressError(401, 'Invalid username or password'));
+
+        }
+        // const isMatch = await bcrypt.compare(password, existing[0].password);
+        // if (!isMatch) {
+        // return next(new ExpressError(401, 'Invalid  password'));
+        // }
+        // console.log("user id i login route",existing[0].user_id)
+        const user= {
+            id:existing[0].user_id,
+            role:'user'
+        }
+        if(existing){
+            const token = createToken(user)
+            res.cookie("token",token,{
+                httpOnly:true,
+                secure:false,
+                sameSite:"lax",
+                maxAge:24 * 60 * 60 * 1000
+            })
+
+            res.status(200).json({
+              jwtToken:token,
+              message:"User successfully Logged in"
+            })
+        }else{
+            return next(new ExpressError("404","user not Found ! Please Signup before login"))
+        }
+
+
+    }catch(err){
+        console.log(err)
+       res.status(500).json("Something went wrong")
+    }
+
+}
+
+export const logout = (req, res) => {
+  console.log("Logout api hit")
+  res.clearCookie("token", {
+    httpOnly: true,
+    secure: false, // true in production with HTTPS
+    sameSite: "lax",
+  });
+
+  res.status(200).json({
+    success: true,
+    message: "Logged out successfully",
+  });
+};
+
+export const verifyOtp = async (req, res, next) => {
+  try {
+    const { email, otp } = req.body;
+
+    if (!email || !otp) {
+      return next(
+        new ExpressError(400, "Email and OTP required")
+      );
+    }
+
+    const formattedEmail = email.trim().toLowerCase();
+
+    // Get OTP from Redis
+    const storedOtp = await redis.get(
+      `otp:${formattedEmail}`
+    );
+
+    if (!storedOtp) {
+      return next(
+        new ExpressError(400, "OTP expired")
+      );
+    }
+
+    // Compare OTP
+    if (otp !== storedOtp) {
+      return next(
+        new ExpressError(400, "Invalid OTP")
+      );
+    }
+
+    // Get pending user from Redis
+    const pendingUser = await redis.get(
+      `pendingUser:${formattedEmail}`
+    );
+
+    if (!pendingUser) {
+      return next(
+        new ExpressError(400, "Signup session expired")
+      );
+    }
+
+    const userData = JSON.parse(pendingUser);
+
+    // Insert VERIFIED user into DB
+    const [result] = await db.execute(
+      `INSERT INTO users 
+      (username, email, password, role, verify)
+      VALUES (?, ?, ?, ?, ?)`,
+      [
+        userData.username,
+        userData.email,
+        userData.password,
+        userData.role,
+        true,
+      ]
+    );
+
+    // Create token
+    const user = {
+      id: result.insertId,
+      role: userData.role,
+    };
+
+    const token = createToken(user);
+
+    // Save cookie
+    res.cookie("token", token, {
+      httpOnly: true,
+      secure: false,
+      sameSite: "lax",
+      maxAge: 24 * 60 * 60 * 1000,
+    });
+
+    // Delete Redis temp data
+    await redis.del(`otp:${formattedEmail}`);
+    await redis.del(`pendingUser:${formattedEmail}`);
+
+    return res.status(200).json({
+      success: true,
+      message: "OTP verified successfully",
+    });
+
+  } catch (err) {
+    console.log(err);
+
+    return next(
+      new ExpressError(500, "Internal Server Error")
+    );
+  }
+};

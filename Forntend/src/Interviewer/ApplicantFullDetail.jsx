@@ -1,0 +1,383 @@
+import { useNavigate, useParams } from "react-router-dom";
+import {
+  Box,
+  Typography,
+  Button,
+  Avatar,
+  Chip,
+  Divider,
+  Paper,
+} from "@mui/material";
+
+import { useEffect, useState } from "react";
+
+export default function ApplicantFullDetail() {
+  const navigate = useNavigate();
+  const { applicantId } = useParams();
+
+  const [applicantDetail, setApplicantDetail] = useState(null);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    const fetchApplicantDetail = async () => {
+      try {
+        const response = await fetch(
+          `http://localhost:5000/api/applicantFullDetail/${applicantId}`,
+          {
+            method: "GET",
+            credentials: "include",
+          }
+        );
+
+        const res = await response.json();
+
+        if (res.success) {
+          setApplicantDetail(res.data);
+        } else {
+          setError(res.message || "Failed to fetch applicant details");
+        }
+      } catch (err) {
+        setError("Something went wrong while fetching applicant details");
+      }
+    };
+
+    fetchApplicantDetail();
+  }, [applicantId]);
+
+  if (error) {
+    return (
+      <Box sx={{ minHeight: "100vh", p: 4, bgcolor: "#f4f7fb" }}>
+        <Button onClick={() => navigate(-1)}>← Back</Button>
+
+        <Typography color="error" fontWeight={800} mt={4}>
+          {error}
+        </Typography>
+      </Box>
+    );
+  }
+
+  if (!applicantDetail) {
+    return (
+      <Box sx={{ minHeight: "100vh", p: 4, bgcolor: "#f4f7fb" }}>
+        <Typography fontWeight={800}>Loading applicant details...</Typography>
+      </Box>
+    );
+  }
+
+  const firstLetter =
+    applicantDetail.full_name?.charAt(0)?.toUpperCase() || "A";
+
+  const skills = applicantDetail.skills
+    ? applicantDetail.skills.split(",").map((skill) => skill.trim())
+    : [];
+
+  const createdDate = applicantDetail.created_at
+    ? new Date(applicantDetail.created_at).toLocaleDateString("en-IN")
+    : "N/A";
+
+  return (
+    <Box
+      sx={{
+        minHeight: "100vh",
+        bgcolor: "#f4f7fb",
+        p: { xs: 2, md: 4 },
+      }}
+    >
+      <Button
+        onClick={() => navigate(-1)}
+        sx={{
+          mb: 3,
+          textTransform: "none",
+          fontWeight: 700,
+          color: "#1e293b",
+        }}
+      >
+        ← Back to Applicants
+      </Button>
+
+      <Paper
+        elevation={0}
+        sx={{
+          maxWidth: 1100,
+          mx: "auto",
+          borderRadius: 4,
+          overflow: "hidden",
+          border: "1px solid #e2e8f0",
+          bgcolor: "#fff",
+        }}
+      >
+        <Box
+          sx={{
+            background: "linear-gradient(135deg, #1976d2, #0f172a)",
+            color: "#fff",
+            p: { xs: 3, md: 5 },
+            display: "flex",
+            alignItems: "center",
+            gap: 3,
+            flexWrap: "wrap",
+          }}
+        >
+          <Avatar
+            sx={{
+              width: 90,
+              height: 90,
+              bgcolor: "#fff",
+              color: "#1976d2",
+              fontSize: 34,
+              fontWeight: 900,
+            }}
+          >
+            {firstLetter}
+          </Avatar>
+
+          <Box>
+            <Typography variant="h4" fontWeight={900}>
+              {applicantDetail.full_name || "Applicant Details"}
+            </Typography>
+
+            <Typography sx={{ opacity: 0.85, mt: 0.5 }}>
+              Student ID: {applicantDetail.student_id || "N/A"}
+            </Typography>
+
+            <Chip
+              label="Applied"
+              sx={{
+                mt: 2,
+                bgcolor: "#dbeafe",
+                color: "#1d4ed8",
+                fontWeight: 800,
+              }}
+            />
+          </Box>
+        </Box>
+
+        <Box
+          sx={{
+            p: { xs: 3, md: 5 },
+            display: "grid",
+            gridTemplateColumns: { xs: "1fr", md: "2fr 1fr" },
+            gap: 4,
+          }}
+        >
+          <Box>
+            <Typography variant="h6" fontWeight={800} mb={2}>
+              Personal Information
+            </Typography>
+
+            <Box sx={{ display: "grid", gap: 2 }}>
+              <Info label="Full Name" value={applicantDetail.full_name} />
+              <Info label="Email" value={applicantDetail.email_address} />
+              <Info label="Phone" value={applicantDetail.phone_number} />
+              <Info
+                label="LinkedIn"
+                value={applicantDetail.linkedin_profile || "N/A"}
+              />
+            </Box>
+
+            <Divider sx={{ my: 4 }} />
+
+            <Typography variant="h6" fontWeight={800} mb={2}>
+              Education
+            </Typography>
+
+            <Box sx={{ display: "grid", gap: 2 }}>
+              <Info label="Degree / Branch" value={applicantDetail.degree_branch} />
+              <Info
+                label="College / University"
+                value={applicantDetail.college_university}
+              />
+              <Info
+                label="Graduation Year"
+                value={applicantDetail.graduation_year}
+              />
+              <Info label="CGPA" value={applicantDetail.cgpa} />
+            </Box>
+
+            <Divider sx={{ my: 4 }} />
+
+            <Typography variant="h6" fontWeight={800} mb={2}>
+              Skills
+            </Typography>
+
+            <Box sx={{ display: "flex", gap: 1.2, flexWrap: "wrap" }}>
+              {skills.length > 0 ? (
+                skills.map((skill) => (
+                  <Chip
+                    key={skill}
+                    label={skill}
+                    sx={{
+                      bgcolor: "#f1f5f9",
+                      color: "#334155",
+                      fontWeight: 700,
+                    }}
+                  />
+                ))
+              ) : (
+                <Typography color="text.secondary">No skills added</Typography>
+              )}
+            </Box>
+          </Box>
+
+          <Box>
+            <Paper
+              elevation={0}
+              sx={{
+                p: 3,
+                borderRadius: 3,
+                border: "1px solid #e2e8f0",
+                bgcolor: "#f8fafc",
+              }}
+            >
+              <Typography variant="h6" fontWeight={800} mb={2}>
+                Application Details
+              </Typography>
+
+              <Info
+                label="Student Details ID"
+                value={applicantDetail.student_details_id}
+              />
+              <Info label="Student ID" value={applicantDetail.student_id} />
+              <Info label="Profile Created" value={createdDate} />
+              <Info
+                label="Portfolio / Resume"
+                value={applicantDetail.resume_link_portfolio || "N/A"}
+              />
+
+              <Button
+                fullWidth
+                variant="contained"
+                sx={{
+                  mt: 3,
+                  py: 1.2,
+                  borderRadius: 2,
+                  textTransform: "none",
+                  fontWeight: 800,
+                  bgcolor: "#1976d2",
+                }}
+              >
+                Message Applicant
+              </Button>
+
+              <Button
+                fullWidth
+                variant="outlined"
+                href={applicantDetail.resume_link_portfolio || "#"}
+                target="_blank"
+                sx={{
+                  mt: 1.5,
+                  py: 1.2,
+                  borderRadius: 2,
+                  textTransform: "none",
+                  fontWeight: 800,
+                }}
+              >
+                View Resume / Portfolio
+              </Button>
+
+              <Box
+                sx={{
+                  mt: 3,
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: 1.5,
+                }}
+              >
+                <Typography
+                  sx={{
+                    fontSize: 14,
+                    fontWeight: 800,
+                    color: "#0f172a",
+                  }}
+                >
+                  Update Status
+                </Typography>
+
+                <Button
+                  fullWidth
+                  sx={{
+                    py: 1.2,
+                    borderRadius: 2,
+                    textTransform: "none",
+                    fontWeight: 800,
+                    bgcolor: "#dcfce7",
+                    color: "#166534",
+
+                    "&:hover": {
+                      bgcolor: "#bbf7d0",
+                    },
+                  }}
+                >
+                  ✓ Select
+                </Button>
+
+                <Button
+                  fullWidth
+                  sx={{
+                    py: 1.2,
+                    borderRadius: 2,
+                    textTransform: "none",
+                    fontWeight: 800,
+                    bgcolor: "#fee2e2",
+                    color: "#991b1b",
+
+                    "&:hover": {
+                      bgcolor: "#fecaca",
+                    },
+                  }}
+                >
+                  ✕ Not Selected
+                </Button>
+
+                <Button
+                  fullWidth
+                  sx={{
+                    py: 1.2,
+                    borderRadius: 2,
+                    textTransform: "none",
+                    fontWeight: 800,
+                    bgcolor: "#dbeafe",
+                    color: "#1d4ed8",
+
+                    "&:hover": {
+                      bgcolor: "#bfdbfe",
+                    },
+                  }}
+                >
+                  💬 In Touch
+                </Button>
+              </Box>
+            </Paper>
+          </Box>
+        </Box>
+      </Paper>
+    </Box>
+  );
+}
+
+function Info({ label, value }) {
+  return (
+    <Box>
+      <Typography
+        sx={{
+          fontSize: 13,
+          color: "#64748b",
+          fontWeight: 700,
+          mb: 0.3,
+        }}
+      >
+        {label}
+      </Typography>
+
+      <Typography
+        sx={{
+          fontSize: 15,
+          color: "#0f172a",
+          fontWeight: 700,
+          wordBreak: "break-word",
+        }}
+      >
+        {value || "N/A"}
+      </Typography>
+    </Box>
+  );
+}

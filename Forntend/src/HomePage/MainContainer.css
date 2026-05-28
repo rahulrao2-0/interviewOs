@@ -1,0 +1,22 @@
+.container{
+    margin: auto;
+    width: 70%;
+}
+.filters_Posts{
+    display: flex;
+    flex-direction: row;
+
+}
+@media (max-width: 600px) {
+  /* Styles for mobile */
+  .container{
+    width: 100%;
+  }
+  
+}
+
+@media(max-width:900px){
+    .filters_Posts{
+    flex-direction: column;
+  }
+}
