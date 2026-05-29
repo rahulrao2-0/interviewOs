@@ -11,6 +11,7 @@ const drawerWidth = 240; // 🔥 IMPORTANT
 import {useAuth} from '../AuthContext';  
 import { useNavigate } from "react-router-dom";
 import DashboardHome from "./DashboardHome.jsx";
+import ScheduledInterview from "./ScheduledInterview.jsx";
 
 
 export default function Dashboard() {
@@ -23,6 +24,9 @@ export default function Dashboard() {
     setActiveView("Messages");
   }
 
+  const handleScheduledInterview = ()=>{
+    setActiveView("Scheduled Interviews");
+  }
   const handleSelectedUser = (user)=>{
     console.log("Selected user in Dashboard 👉", user);
     setSelectedApplicant(user);
@@ -70,7 +74,7 @@ export default function Dashboard() {
         {activeView === "Jobs" && <Jobs />}
         {activeView === "Applications" && <Applicants onMessageClick={handleMessageClick} handleSelectedUser={handleSelectedUser} />}
         {activeView === "Saved Jobs" && <h2>Saved Jobs</h2>}
-        {activeView === "Companies" && <h2>Companies</h2>}
+        {activeView === "Scheduled Interviews" && <ScheduledInterview />}
         {activeView === "Messages" && <Message  selectedApplicant={selectedApplicant} />}
       </Box>
     </Box>

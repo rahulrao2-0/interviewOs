@@ -1,5 +1,8 @@
 import db from "../config/db.js";
 import ExpressError from "../ExpressError.js";
+import SendEmail from "../utils/SendEmail.js";
+
+import { io } from "../app.js";
 
 export const getDashboard = async (req, res, next) => {
   try {
@@ -76,5 +79,320 @@ export const getDashboard = async (req, res, next) => {
   } catch (err) {
     console.log("Dashboard Error:", err);
     next(new expressError("Failed to load dashboard", 500));
+  }
+};
+
+
+
+export const scheduleInterview = async (req, res, next) => {
+  console.log(
+    "Schedule Interview API hit with body:",
+    req.body
+  );
+
+  try {
+    const {
+      application_id,
+      interview_date,
+      meeting_link,
+      student_id,
+    } = req.body;
+
+    // logged in interviewer
+    const interviewer_id = req.user.id;
+
+    // validation
+    if (
+      !application_id ||
+      !interview_date ||
+      !student_id
+    ) {
+      return next(
+        new ExpressError(
+          "Application ID, student ID and interview date are required",
+          400
+        )
+      );
+    }
+
+    // check application + fetch details
+    const [applicationRows] = await db.execute(
+      `SELECT 
+          a.app_id,
+          a.name,
+          a.email,
+          a.user_id,
+
+          j.job_name,
+          j.company,
+
+          u.username AS interviewer_name
+
+       FROM applications a
+
+       JOIN jobs j
+          ON a.job_id = j.job_id
+
+       LEFT JOIN users u
+          ON u.user_id = ?
+
+       WHERE a.app_id = ?`,
+      [interviewer_id, application_id]
+    );
+
+    // application not found
+    if (applicationRows.length === 0) {
+      return next(
+        new ExpressError(
+          "Application not found",
+          404
+        )
+      );
+    }
+
+    const applicant = applicationRows[0];
+
+    // formatted interview date
+    const formattedDate =
+      new Date(interview_date).toLocaleString(
+        "en-IN",
+        {
+          dateStyle: "full",
+          timeStyle: "short",
+        }
+      );
+
+    // =========================
+    // SEND EMAIL FIRST
+    // =========================
+
+    await SendEmail({
+      to: applicant.email,
+
+      subject: `Interview Scheduled - ${applicant.job_name}`,
+
+      html: `
+        <div style="
+          max-width:600px;
+          margin:auto;
+          font-family:Arial,sans-serif;
+          background:#ffffff;
+          border-radius:12px;
+          overflow:hidden;
+          border:1px solid #e5e7eb;
+        ">
+
+          <div style="
+            background:linear-gradient(135deg,#2563eb,#0f172a);
+            padding:30px;
+            text-align:center;
+            color:white;
+          ">
+            <h1 style="margin:0;">
+              Interview Scheduled
+            </h1>
+
+            <p style="
+              margin-top:10px;
+              opacity:0.9;
+            ">
+              InterviewOS Hiring Team
+            </p>
+          </div>
+
+          <div style="padding:30px;">
+
+            <h2 style="
+              color:#111827;
+              margin-bottom:20px;
+            ">
+              Hello ${applicant.name},
+            </h2>
+
+            <p style="
+              color:#374151;
+              font-size:15px;
+              line-height:1.7;
+            ">
+              Your interview has been successfully scheduled.
+            </p>
+
+            <div style="
+              margin-top:25px;
+              background:#f8fafc;
+              border-radius:10px;
+              padding:20px;
+              border:1px solid #e2e8f0;
+            ">
+
+              <p>
+                <strong>Company:</strong>
+                ${applicant.company}
+              </p>
+
+              <p>
+                <strong>Role:</strong>
+                ${applicant.job_name}
+              </p>
+
+              <p>
+                <strong>Interviewer:</strong>
+                ${applicant.interviewer_name}
+              </p>
+
+              <p>
+                <strong>Interview Date:</strong>
+                ${formattedDate}
+              </p>
+
+            </div>
+
+            <p style="
+              margin-top:25px;
+              color:#374151;
+              line-height:1.7;
+            ">
+              Please join the interview on time and
+              ensure your internet connection and
+              microphone are working properly.
+              and Interview link will be shared on Interview Time.
+            </p>
+
+            <div style="
+              margin-top:30px;
+              padding-top:20px;
+              border-top:1px solid #e5e7eb;
+              color:#6b7280;
+              font-size:14px;
+            ">
+              Best Regards,
+              <br/>
+              <strong>
+                InterviewOS Team
+              </strong>
+            </div>
+
+          </div>
+        </div>
+      `,
+    });
+
+    // =========================
+    // INSERT INTERVIEW
+    // =========================
+
+    const [result] = await db.execute(
+      `INSERT INTO interviews
+        (
+          app_id,
+          student_id,
+          interviewer_id,
+          scheduled_at,
+          status,
+          meeting_link
+        )
+
+       VALUES (?, ?, ?, ?, ?, ?)`,
+      [
+        application_id,
+        student_id,
+        interviewer_id,
+        interview_date,
+        "scheduled",
+        meeting_link || null,
+      ]
+    );
+
+    // =========================
+    // UPDATE APPLICATION STATUS
+    // =========================
+
+    await db.execute(
+      `UPDATE applications
+       SET status = ?
+       WHERE app_id = ?`,
+      ["shortlisted", application_id]
+    );
+
+    // =========================
+    // SOCKET MESSAGE FORMAT
+    // =========================
+
+    
+
+    // SOCKET EMIT EXAMPLE
+    io.to(String(student_id)).emit(
+  "receive_message",
+  {
+    senderId: interviewer_id,
+
+    receiverId: String(student_id),
+
+    text: `
+Interview Scheduled
+
+Company: ${applicant.company}
+Role: ${applicant.job_name}
+Date: ${formattedDate}
+    `,
+
+    type: "INTERVIEW_SCHEDULED",
+
+    interview: {
+      interview_id: result.insertId,
+
+      application_id,
+
+      interview_date,
+
+      meeting_link,
+
+      status: "scheduled",
+    },
+
+    timestamp: new Date().toISOString(),
+  }
+);
+
+    // =========================
+    // RESPONSE
+    // =========================
+
+    res.status(201).json({
+      success: true,
+
+      message:
+        "Interview scheduled successfully",
+
+      interview: {
+        interview_id: result.insertId,
+
+        application_id,
+
+        student_id,
+
+        interviewer_id,
+
+        interview_date,
+
+        status: "scheduled",
+
+        meeting_link,
+      },
+
+    });
+
+  } catch (err) {
+    console.log(
+      "Schedule Interview Error:",
+      err
+    );
+
+    next(
+      new ExpressError(
+        "Failed to schedule interview",
+        500
+      )
+    );
   }
 };

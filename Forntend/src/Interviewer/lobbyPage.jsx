@@ -1,10 +1,14 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Box, Typography } from "@mui/material";
+import { v4 as uuidv4 } from "uuid";
 
 export default function Lobby() {
   const localVideoRef = useRef(null);
   const localStreamRef = useRef(null);
+  const roomId = uuidv4();
+
+  console.log(roomId);
 
   const [username, setUsername] = useState("");
   const [videoAvailable, setVideoAvailable] = useState(null);
@@ -20,6 +24,8 @@ export default function Lobby() {
       localStreamRef.current?.getTracks().forEach((track) => track.stop());
     };
   }, []);
+
+  
 
   const getPermissions = async () => {
     try {
@@ -50,7 +56,7 @@ export default function Lobby() {
     setError("");
     setConnecting(true);
     localStreamRef.current?.getTracks().forEach((track) => track.stop());
-    navigate(`/call/test-room`, { state: { username } });
+    navigate(`/call/${roomId}`, { state: { username } });
   };
 
   const getCheckState = (available) => {
@@ -141,7 +147,7 @@ export default function Lobby() {
           <Box sx={styles.card}>
             <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
               <Typography sx={styles.fieldLabel}>Room</Typography>
-              <Box sx={styles.roomBadge}>test-room</Box>
+              <Box sx={styles.roomBadge}>{roomId}</Box>
             </Box>
           </Box>
 

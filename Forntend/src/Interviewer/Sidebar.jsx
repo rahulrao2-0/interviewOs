@@ -23,7 +23,7 @@ const menuItems = [
   { text: "Jobs", icon: <WorkIcon /> },
   { text: "Applications", icon: <DescriptionIcon /> },
   { text: "Saved Jobs", icon: <BookmarkIcon /> },
-  { text: "Companies", icon: <BusinessIcon /> },
+  { text: "Scheduled Interviews", icon: <BusinessIcon /> },
   { text: "Messages", icon: <MessageIcon /> },
 ];
 

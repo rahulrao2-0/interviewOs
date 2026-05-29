@@ -2,7 +2,7 @@ import express from "express";
 import { applicants } from "../controllers/applicants.js";
 import { authMiddleware , interviewervalidation } from "../middleware/authValidate.js";
 import { MyApplications,getInterviewerInboxUsers,getStudentInboxUsers , applicantFullDetail,profileExist,StudentProfileSetup,
-     InterviewerProfileSetup,getProfile
+     InterviewerProfileSetup,getProfile,updateSelectionStatus
      
 } from "../controllers/applicants.js";
 import ExpressError from "../ExpressError.js";
@@ -19,5 +19,6 @@ router.get("/applicantFullDetail/:applicantId",  applicantFullDetail);
 router.post("/student-profile-setup", authMiddleware, StudentProfileSetup);
 router.post("/interviewer-profile-setup",authMiddleware, InterviewerProfileSetup)
 router.get("/profile",authMiddleware,getProfile)
+router.put("/updateSelectionStatus",authMiddleware, updateSelectionStatus);
 
 export default router;

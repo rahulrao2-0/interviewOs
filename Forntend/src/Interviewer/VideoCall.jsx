@@ -1,7 +1,29 @@
-import { useEffect, useRef } from "react";
-import { useParams, useLocation, useNavigate } from "react-router-dom";
+import React, { useEffect, useRef, useState } from "react";
 import { io } from "socket.io-client";
-import { Box, Button, Typography } from "@mui/material";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
+
+import {
+  Box,
+  Typography,
+  Button,
+  IconButton,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  List,
+  ListItem,
+  ListItemText,
+} from "@mui/material";
+
+import {
+  CallEnd,
+  Mic,
+  MicOff,
+  Videocam,
+  VideocamOff,
+} from "@mui/icons-material";
+
+import {useAuth} from "../AuthContext.jsx"
 
 const socket = io("http://localhost:5000", {
   withCredentials: true,
@@ -9,35 +31,76 @@ const socket = io("http://localhost:5000", {
 
 export default function VideoCall() {
   const { roomId } = useParams();
-  const location = useLocation();
+
+  const{user} = useAuth();
+
+  console.log(user?.user?.user_id)
+  
+
+  
+
   const navigate = useNavigate();
 
   const username = location.state?.username || "Guest";
 
+  const userRef = useRef(null);
+
   const localVideoRef = useRef(null);
+
   const remoteVideoRef = useRef(null);
+
   const localStreamRef = useRef(null);
+
   const peerConnectionRef = useRef(null);
 
+  const [micOn, setMicOn] = useState(true);
+
+  const [cameraOn, setCameraOn] = useState(true);
+
+  const [openInbox, setOpenInbox] = useState(false);
+
+  const [inboxUsers, setInboxUsers] = useState([]);
+
+  console.log(inboxUsers)
+
   const peerConfig = {
-    iceServers: [{ urls: "stun:stun.l.google.com:19302" }],
+    iceServers: [
+      {
+        urls: "stun:stun.l.google.com:19302",
+      },
+    ],
   };
 
+  if(user?.user?.role === "interviewer"){
+    userRef.current = true;
+    
+  }
+
+  // ================= START CAMERA =================
+
   const startCamera = async () => {
-    const stream = await navigator.mediaDevices.getUserMedia({
-      video: true,
-      audio: true,
-    });
+    try {
+      const stream =
+        await navigator.mediaDevices.getUserMedia({
+          video: true,
+          audio: true,
+        });
 
-    localStreamRef.current = stream;
+      localStreamRef.current = stream;
 
-    if (localVideoRef.current) {
-      localVideoRef.current.srcObject = stream;
+      if (localVideoRef.current) {
+        localVideoRef.current.srcObject = stream;
+      }
+    } catch (err) {
+      console.log(err);
     }
   };
 
+  // ================= CREATE PEER =================
+
   const createPeerConnection = () => {
-    const peerConnection = new RTCPeerConnection(peerConfig);
+    const peerConnection =
+      new RTCPeerConnection(peerConfig);
 
     peerConnection.onicecandidate = (event) => {
       if (event.candidate) {
@@ -49,21 +112,90 @@ export default function VideoCall() {
     };
 
     peerConnection.ontrack = (event) => {
-      console.log("Remote stream received:", event.streams[0]);
-
       if (remoteVideoRef.current) {
-        remoteVideoRef.current.srcObject = event.streams[0];
+        remoteVideoRef.current.srcObject =
+          event.streams[0];
       }
     };
 
-    localStreamRef.current.getTracks().forEach((track) => {
-      peerConnection.addTrack(track, localStreamRef.current);
-    });
+    localStreamRef.current
+      ?.getTracks()
+      .forEach((track) => {
+        peerConnection.addTrack(
+          track,
+          localStreamRef.current
+        );
+      });
 
     peerConnectionRef.current = peerConnection;
 
     return peerConnection;
   };
+
+  // ================= FETCH INBOX USERS =================
+
+  const handleSend = async () => {
+    try {
+      const response = await fetch(
+        "http://localhost:5000/api/interviewer-inbox-users",
+        {
+          method: "GET",
+          credentials: "include",
+        }
+      );
+
+      const res = await response.json();
+
+      if (res.success) {
+        setInboxUsers(res.users);
+
+        setOpenInbox(true);
+      }
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
+  // ================= SEND ROOM ID =================
+
+  const interviewLink = `http://localhost:5173/call/${roomId}`;
+
+  const handleSendRoomId = async (receiverId) => {
+
+  const message = `
+  You are invited to an interview.
+
+  Room ID: ${roomId}
+
+  Join Here:
+  ${interviewLink}
+  `;
+
+   await fetch("http://localhost:5000/api/save-message", {
+  method: "POST",
+
+  credentials: "include",
+
+  headers: {
+    "Content-Type": "application/json",
+  },
+
+  body: JSON.stringify({
+    receiverId,
+    text: message,
+  }),
+  });
+
+  socket.emit("send_message", {
+  receiverId,
+  text: message,
+  });
+
+  setOpenInbox(false);
+
+  }
+
+  // ================= SOCKET EVENTS =================
 
   useEffect(() => {
     const init = async () => {
@@ -76,11 +208,15 @@ export default function VideoCall() {
     };
 
     const handleUserJoined = async () => {
-      const peerConnection = createPeerConnection();
+      const peerConnection =
+        createPeerConnection();
 
-      const offer = await peerConnection.createOffer();
+      const offer =
+        await peerConnection.createOffer();
 
-      await peerConnection.setLocalDescription(offer);
+      await peerConnection.setLocalDescription(
+        offer
+      );
 
       socket.emit("video_offer", {
         roomId,
@@ -89,15 +225,19 @@ export default function VideoCall() {
     };
 
     const handleOffer = async ({ offer }) => {
-      const peerConnection = createPeerConnection();
+      const peerConnection =
+        createPeerConnection();
 
       await peerConnection.setRemoteDescription(
         new RTCSessionDescription(offer)
       );
 
-      const answer = await peerConnection.createAnswer();
+      const answer =
+        await peerConnection.createAnswer();
 
-      await peerConnection.setLocalDescription(answer);
+      await peerConnection.setLocalDescription(
+        answer
+      );
 
       socket.emit("video_answer", {
         roomId,
@@ -113,7 +253,9 @@ export default function VideoCall() {
       }
     };
 
-    const handleIceCandidate = async ({ candidate }) => {
+    const handleIceCandidate = async ({
+      candidate,
+    }) => {
       if (peerConnectionRef.current) {
         await peerConnectionRef.current.addIceCandidate(
           new RTCIceCandidate(candidate)
@@ -123,84 +265,342 @@ export default function VideoCall() {
 
     init();
 
-    socket.on("user_joined_video", handleUserJoined);
+    socket.on(
+      "user_joined_video",
+      handleUserJoined
+    );
+
     socket.on("video_offer", handleOffer);
+
     socket.on("video_answer", handleAnswer);
-    socket.on("ice_candidate", handleIceCandidate);
+
+    socket.on(
+      "ice_candidate",
+      handleIceCandidate
+    );
 
     return () => {
-      socket.off("user_joined_video", handleUserJoined);
+      socket.off(
+        "user_joined_video",
+        handleUserJoined
+      );
+
       socket.off("video_offer", handleOffer);
-      socket.off("video_answer", handleAnswer);
-      socket.off("ice_candidate", handleIceCandidate);
 
-      socket.emit("leave_video_room", { roomId });
+      socket.off(
+        "video_answer",
+        handleAnswer
+      );
 
-      localStreamRef.current?.getTracks().forEach((track) => track.stop());
+      socket.off(
+        "ice_candidate",
+        handleIceCandidate
+      );
+
+      socket.emit("leave_video_room", {
+        roomId,
+      });
+
+      localStreamRef.current
+        ?.getTracks()
+        .forEach((track) => track.stop());
+
       peerConnectionRef.current?.close();
     };
   }, [roomId, username]);
 
+  // ================= END CALL =================
+
   const handleEndCall = () => {
-    localStreamRef.current?.getTracks().forEach((track) => track.stop());
+    localStreamRef.current
+      ?.getTracks()
+      .forEach((track) => track.stop());
+
     peerConnectionRef.current?.close();
 
-    socket.emit("leave_video_room", { roomId });
+    socket.emit("leave_video_room", {
+      roomId,
+    });
 
     navigate("/");
   };
 
+  // ================= TOGGLE MIC =================
+
+  const handleToggleMic = () => {
+    const audioTrack =
+      localStreamRef.current
+        ?.getTracks()
+        .find(
+          (track) => track.kind === "audio"
+        );
+
+    if (audioTrack) {
+      audioTrack.enabled =
+        !audioTrack.enabled;
+
+      setMicOn(audioTrack.enabled);
+    }
+  };
+
+  // ================= TOGGLE CAMERA =================
+
+  const handleToggleCamera = () => {
+    const videoTrack =
+      localStreamRef.current
+        ?.getTracks()
+        .find(
+          (track) => track.kind === "video"
+        );
+
+    if (videoTrack) {
+      videoTrack.enabled =
+        !videoTrack.enabled;
+
+      setCameraOn(videoTrack.enabled);
+    }
+  };
+
   return (
-    <Box sx={{ padding: "30px" }}>
-      <Typography variant="h4">Interview Video Call</Typography>
+    <Box
+      sx={{
+        height: "100vh",
+        width: "100%",
+        backgroundColor: "#111827",
+        display: "flex",
+        flexDirection: "column",
+      }}
+    >
+      {/* HEADER */}
 
-      <Typography sx={{ marginTop: "10px" }}>
-        Username: {username}
-      </Typography>
-
-      <Typography>Room ID: {roomId}</Typography>
-
-      <Box sx={{ display: "flex", gap: "20px", marginTop: "30px" }}>
+      <Box
+        sx={{
+          padding: "15px 25px",
+          backgroundColor: "#1f2937",
+          color: "white",
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          flexWrap: "wrap",
+        }}
+      >
         <Box>
-          <Typography variant="h6">My Video</Typography>
+          <Typography
+            variant="h5"
+            fontWeight="bold"
+          >
+            Video Interview
+          </Typography>
+
+          <Typography fontSize="14px">
+            Room ID : {roomId}
+          </Typography>
+        </Box>
+
+        <Box
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            gap: "15px",
+          }}
+        >
+          <Typography fontSize="16px">
+            Username : {username}
+          </Typography>
+
+          {userRef.current && (
+            <Button
+              variant="contained"
+              onClick={handleSend}
+            >
+              Send Room ID
+            </Button>
+          )}
+        </Box>
+      </Box>
+
+      {/* VIDEO SECTION */}
+
+      <Box
+        sx={{
+          flex: 1,
+          display: "flex",
+          flexDirection: {
+            xs: "column",
+            md: "row",
+          },
+          gap: "20px",
+          padding: "20px",
+        }}
+      >
+        {/* LOCAL VIDEO */}
+
+        <Box
+          sx={{
+            flex: 1,
+            position: "relative",
+            border: "2px solid white",
+            borderRadius: "16px",
+            overflow: "hidden",
+          }}
+        >
           <video
             ref={localVideoRef}
             autoPlay
             muted
             playsInline
             style={{
-              width: "400px",
-              height: "280px",
+              width: "100%",
+              height: "100%",
+              objectFit: "cover",
               backgroundColor: "black",
-              borderRadius: "10px",
             }}
           />
+
+          <Typography
+            sx={{
+              position: "absolute",
+              bottom: "15px",
+              left: "15px",
+              backgroundColor:
+                "rgba(0,0,0,0.6)",
+              color: "white",
+              padding: "6px 14px",
+              borderRadius: "20px",
+            }}
+          >
+            You
+          </Typography>
         </Box>
 
-        <Box>
-          <Typography variant="h6">Remote Video</Typography>
+        {/* REMOTE VIDEO */}
+
+        <Box
+          sx={{
+            flex: 1,
+            position: "relative",
+            border: "2px solid white",
+            borderRadius: "16px",
+            overflow: "hidden",
+          }}
+        >
           <video
             ref={remoteVideoRef}
             autoPlay
             playsInline
             style={{
-              width: "400px",
-              height: "280px",
+              width: "100%",
+              height: "100%",
+              objectFit: "cover",
               backgroundColor: "black",
-              borderRadius: "10px",
             }}
           />
+
+          <Typography
+            sx={{
+              position: "absolute",
+              bottom: "15px",
+              left: "15px",
+              backgroundColor:
+                "rgba(0,0,0,0.6)",
+              color: "white",
+              padding: "6px 14px",
+              borderRadius: "20px",
+            }}
+          >
+            Candidate
+          </Typography>
         </Box>
       </Box>
 
-      <Button
-        variant="contained"
-        color="error"
-        sx={{ marginTop: "30px" }}
-        onClick={handleEndCall}
+      {/* CONTROLS */}
+
+      <Box
+        sx={{
+          padding: "20px",
+          backgroundColor: "#1f2937",
+          display: "flex",
+          justifyContent: "center",
+          gap: "20px",
+        }}
       >
-        End Call
-      </Button>
+        <IconButton
+          onClick={handleToggleMic}
+          sx={{
+            backgroundColor: "white",
+          }}
+        >
+          {micOn ? <Mic /> : <MicOff />}
+        </IconButton>
+
+        <IconButton
+          onClick={handleToggleCamera}
+          sx={{
+            backgroundColor: "white",
+          }}
+        >
+          {cameraOn ? (
+            <Videocam />
+          ) : (
+            <VideocamOff />
+          )}
+        </IconButton>
+
+        <Button
+          variant="contained"
+          color="error"
+          startIcon={<CallEnd />}
+          onClick={handleEndCall}
+          sx={{
+            borderRadius: "20px",
+            paddingX: "20px",
+          }}
+        >
+          End Call
+        </Button>
+      </Box>
+
+      {/* INBOX DIALOG */}
+
+      <Dialog
+        open={openInbox}
+        onClose={() =>
+          setOpenInbox(false)
+        }
+        fullWidth
+        maxWidth="sm"
+      >
+        <DialogTitle>
+          Select Candidate
+        </DialogTitle>
+
+        <DialogContent>
+          <List>
+            {inboxUsers?.map((user) => (
+              <ListItem
+                key={user.user_id}
+                secondaryAction={
+                  <Button
+                    variant="contained"
+                    onClick={() =>
+                      handleSendRoomId(
+                        user.user_id
+                      )
+                    }
+                  >
+                    Send
+                  </Button>
+                }
+              >
+                <ListItemText
+                  primary={user.username}
+                  secondary={user.email}
+                />
+              </ListItem>
+            ))}
+          </List>
+        </DialogContent>
+      </Dialog>
     </Box>
   );
 }

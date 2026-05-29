@@ -1,4 +1,5 @@
 import { useNavigate, useParams } from "react-router-dom";
+
 import {
   Box,
   Typography,
@@ -7,16 +8,26 @@ import {
   Chip,
   Divider,
   Paper,
+  TextField,
+  InputAdornment,
 } from "@mui/material";
+
+import CalendarMonthIcon from "@mui/icons-material/CalendarMonth";
 
 import { useEffect, useState } from "react";
 
 export default function ApplicantFullDetail() {
   const navigate = useNavigate();
+
   const { applicantId } = useParams();
 
   const [applicantDetail, setApplicantDetail] = useState(null);
+
   const [error, setError] = useState("");
+
+  const [interviewDate, setInterviewDate] = useState("");
+
+  console.log(applicantDetail);
 
   useEffect(() => {
     const fetchApplicantDetail = async () => {
@@ -44,12 +55,89 @@ export default function ApplicantFullDetail() {
     fetchApplicantDetail();
   }, [applicantId]);
 
+  const handleSelectionUpdate = async (status) => {
+    try {
+      const response = await fetch(
+        `http://localhost:5000/api/updateSelectionStatus`,
+        {
+          method: "PUT",
+
+          credentials: "include",
+
+          headers: {
+            "Content-Type": "application/json",
+          },
+
+          body: JSON.stringify({
+            application_id: applicantDetail?.app_id,
+            status,
+          }),
+        }
+      );
+
+      const res = await response.json();
+
+      if (res.success) {
+        setApplicantDetail((prev) => ({
+          ...prev,
+          application_status: status,
+        }));
+      }
+    } catch (err) {
+      console.log("Failed to update selection status", err);
+    }
+  };
+
+  const handleInterviewSchedule = async () => {
+    try {
+      if (!interviewDate) {
+        return alert("Please select interview date and time");
+      }
+
+      const response = await fetch(`http://localhost:5000/api/schedule-interview`,{
+        method:"POST",
+        credentials:"include",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          application_id: applicantDetail?.app_id,
+          student_id: applicantDetail?.student_id,
+          interview_date: interviewDate,
+          status: "interview_scheduled"
+        }),
+      });
+
+      const res = await response.json();
+
+      if (res.success) {
+        alert("Interview scheduled successfully");
+      } else {
+        alert("Failed to schedule interview");
+      }
+    } catch (err) {
+      console.log("Failed to schedule interview", err);
+    }
+  };
+
   if (error) {
     return (
-      <Box sx={{ minHeight: "100vh", p: 4, bgcolor: "#f4f7fb" }}>
-        <Button onClick={() => navigate(-1)}>← Back</Button>
+      <Box
+        sx={{
+          minHeight: "100vh",
+          p: 4,
+          bgcolor: "#f4f7fb",
+        }}
+      >
+        <Button onClick={() => navigate(-1)}>
+          ← Back
+        </Button>
 
-        <Typography color="error" fontWeight={800} mt={4}>
+        <Typography
+          color="error"
+          fontWeight={800}
+          mt={4}
+        >
           {error}
         </Typography>
       </Box>
@@ -58,8 +146,16 @@ export default function ApplicantFullDetail() {
 
   if (!applicantDetail) {
     return (
-      <Box sx={{ minHeight: "100vh", p: 4, bgcolor: "#f4f7fb" }}>
-        <Typography fontWeight={800}>Loading applicant details...</Typography>
+      <Box
+        sx={{
+          minHeight: "100vh",
+          p: 4,
+          bgcolor: "#f4f7fb",
+        }}
+      >
+        <Typography fontWeight={800}>
+          Loading applicant details...
+        </Typography>
       </Box>
     );
   }
@@ -68,11 +164,15 @@ export default function ApplicantFullDetail() {
     applicantDetail.full_name?.charAt(0)?.toUpperCase() || "A";
 
   const skills = applicantDetail.skills
-    ? applicantDetail.skills.split(",").map((skill) => skill.trim())
+    ? applicantDetail.skills
+        .split(",")
+        .map((skill) => skill.trim())
     : [];
 
   const createdDate = applicantDetail.created_at
-    ? new Date(applicantDetail.created_at).toLocaleDateString("en-IN")
+    ? new Date(
+        applicantDetail.created_at
+      ).toLocaleDateString("en-IN")
     : "N/A";
 
   return (
@@ -106,14 +206,23 @@ export default function ApplicantFullDetail() {
           bgcolor: "#fff",
         }}
       >
+        {/* HEADER */}
+
         <Box
           sx={{
-            background: "linear-gradient(135deg, #1976d2, #0f172a)",
+            background:
+              "linear-gradient(135deg, #1976d2, #0f172a)",
+
             color: "#fff",
+
             p: { xs: 3, md: 5 },
+
             display: "flex",
+
             alignItems: "center",
+
             gap: 3,
+
             flexWrap: "wrap",
           }}
         >
@@ -131,16 +240,29 @@ export default function ApplicantFullDetail() {
           </Avatar>
 
           <Box>
-            <Typography variant="h4" fontWeight={900}>
-              {applicantDetail.full_name || "Applicant Details"}
+            <Typography
+              variant="h4"
+              fontWeight={900}
+            >
+              {applicantDetail.full_name ||
+                "Applicant Details"}
             </Typography>
 
-            <Typography sx={{ opacity: 0.85, mt: 0.5 }}>
-              Student ID: {applicantDetail.student_id || "N/A"}
+            <Typography
+              sx={{
+                opacity: 0.85,
+                mt: 0.5,
+              }}
+            >
+              Student ID:{" "}
+              {applicantDetail.student_id || "N/A"}
             </Typography>
 
             <Chip
-              label="Applied"
+              label={
+                applicantDetail?.application_status ||
+                "N/A"
+              }
               sx={{
                 mt: 2,
                 bgcolor: "#dbeafe",
@@ -151,55 +273,123 @@ export default function ApplicantFullDetail() {
           </Box>
         </Box>
 
+        {/* BODY */}
+
         <Box
           sx={{
             p: { xs: 3, md: 5 },
+
             display: "grid",
-            gridTemplateColumns: { xs: "1fr", md: "2fr 1fr" },
+
+            gridTemplateColumns: {
+              xs: "1fr",
+              md: "2fr 1fr",
+            },
+
             gap: 4,
           }}
         >
+          {/* LEFT */}
+
           <Box>
-            <Typography variant="h6" fontWeight={800} mb={2}>
+            <Typography
+              variant="h6"
+              fontWeight={800}
+              mb={2}
+            >
               Personal Information
             </Typography>
 
-            <Box sx={{ display: "grid", gap: 2 }}>
-              <Info label="Full Name" value={applicantDetail.full_name} />
-              <Info label="Email" value={applicantDetail.email_address} />
-              <Info label="Phone" value={applicantDetail.phone_number} />
+            <Box
+              sx={{
+                display: "grid",
+                gap: 2,
+              }}
+            >
+              <Info
+                label="Full Name"
+                value={applicantDetail.full_name}
+              />
+
+              <Info
+                label="Email"
+                value={applicantDetail.email_address}
+              />
+
+              <Info
+                label="Phone"
+                value={applicantDetail.phone_number}
+              />
+
               <Info
                 label="LinkedIn"
-                value={applicantDetail.linkedin_profile || "N/A"}
+                value={
+                  applicantDetail.linkedin_profile ||
+                  "N/A"
+                }
               />
             </Box>
 
             <Divider sx={{ my: 4 }} />
 
-            <Typography variant="h6" fontWeight={800} mb={2}>
+            <Typography
+              variant="h6"
+              fontWeight={800}
+              mb={2}
+            >
               Education
             </Typography>
 
-            <Box sx={{ display: "grid", gap: 2 }}>
-              <Info label="Degree / Branch" value={applicantDetail.degree_branch} />
+            <Box
+              sx={{
+                display: "grid",
+                gap: 2,
+              }}
+            >
+              <Info
+                label="Degree / Branch"
+                value={
+                  applicantDetail.degree_branch
+                }
+              />
+
               <Info
                 label="College / University"
-                value={applicantDetail.college_university}
+                value={
+                  applicantDetail.college_university
+                }
               />
+
               <Info
                 label="Graduation Year"
-                value={applicantDetail.graduation_year}
+                value={
+                  applicantDetail.graduation_year
+                }
               />
-              <Info label="CGPA" value={applicantDetail.cgpa} />
+
+              <Info
+                label="CGPA"
+                value={applicantDetail.cgpa}
+              />
             </Box>
 
             <Divider sx={{ my: 4 }} />
 
-            <Typography variant="h6" fontWeight={800} mb={2}>
+            <Typography
+              variant="h6"
+              fontWeight={800}
+              mb={2}
+            >
               Skills
             </Typography>
 
-            <Box sx={{ display: "flex", gap: 1.2, flexWrap: "wrap" }}>
+            <Box
+              sx={{
+                display: "flex",
+                gap: 1.2,
+                flexWrap: "wrap",
+              }}
+            >
               {skills.length > 0 ? (
                 skills.map((skill) => (
                   <Chip
@@ -213,10 +403,14 @@ export default function ApplicantFullDetail() {
                   />
                 ))
               ) : (
-                <Typography color="text.secondary">No skills added</Typography>
+                <Typography color="text.secondary">
+                  No skills added
+                </Typography>
               )}
             </Box>
           </Box>
+
+          {/* RIGHT */}
 
           <Box>
             <Paper
@@ -228,20 +422,40 @@ export default function ApplicantFullDetail() {
                 bgcolor: "#f8fafc",
               }}
             >
-              <Typography variant="h6" fontWeight={800} mb={2}>
+              <Typography
+                variant="h6"
+                fontWeight={800}
+                mb={2}
+              >
                 Application Details
               </Typography>
 
               <Info
                 label="Student Details ID"
-                value={applicantDetail.student_details_id}
+                value={
+                  applicantDetail.student_details_id
+                }
               />
-              <Info label="Student ID" value={applicantDetail.student_id} />
-              <Info label="Profile Created" value={createdDate} />
+
+              <Info
+                label="Student ID"
+                value={applicantDetail.student_id}
+              />
+
+              <Info
+                label="Profile Created"
+                value={createdDate}
+              />
+
               <Info
                 label="Portfolio / Resume"
-                value={applicantDetail.resume_link_portfolio || "N/A"}
+                value={
+                  applicantDetail.resume_link_portfolio ||
+                  "N/A"
+                }
               />
+
+              {/* BUTTONS */}
 
               <Button
                 fullWidth
@@ -261,7 +475,10 @@ export default function ApplicantFullDetail() {
               <Button
                 fullWidth
                 variant="outlined"
-                href={applicantDetail.resume_link_portfolio || "#"}
+                href={
+                  applicantDetail.resume_link_portfolio ||
+                  "#"
+                }
                 target="_blank"
                 sx={{
                   mt: 1.5,
@@ -273,6 +490,8 @@ export default function ApplicantFullDetail() {
               >
                 View Resume / Portfolio
               </Button>
+
+              {/* STATUS */}
 
               <Box
                 sx={{
@@ -294,6 +513,9 @@ export default function ApplicantFullDetail() {
 
                 <Button
                   fullWidth
+                  onClick={() =>
+                    handleSelectionUpdate("selected")
+                  }
                   sx={{
                     py: 1.2,
                     borderRadius: 2,
@@ -312,6 +534,9 @@ export default function ApplicantFullDetail() {
 
                 <Button
                   fullWidth
+                  onClick={() =>
+                    handleSelectionUpdate("rejected")
+                  }
                   sx={{
                     py: 1.2,
                     borderRadius: 2,
@@ -330,6 +555,11 @@ export default function ApplicantFullDetail() {
 
                 <Button
                   fullWidth
+                  onClick={() =>
+                    handleSelectionUpdate(
+                      "shortlisted"
+                    )
+                  }
                   sx={{
                     py: 1.2,
                     borderRadius: 2,
@@ -344,6 +574,100 @@ export default function ApplicantFullDetail() {
                   }}
                 >
                   💬 In Touch
+                </Button>
+              </Box>
+
+              {/* INTERVIEW SCHEDULER */}
+
+              <Box
+                sx={{
+                  mt: 3,
+                  p: 2.5,
+                  borderRadius: 3,
+                  background:
+                    "linear-gradient(135deg, #ffffff 0%, #f8fafc 100%)",
+                  border: "1px solid #e2e8f0",
+                  boxShadow:
+                    "0 4px 20px rgba(15,23,42,0.05)",
+                }}
+              >
+                <Typography
+                  sx={{
+                    fontSize: 15,
+                    fontWeight: 800,
+                    color: "#0f172a",
+                    mb: 2,
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 1,
+                  }}
+                >
+                  <CalendarMonthIcon
+                    sx={{
+                      fontSize: 20,
+                      color: "#1976d2",
+                    }}
+                  />
+
+                  Schedule Interview
+                </Typography>
+
+                <TextField
+                  fullWidth
+                  type="datetime-local"
+                  value={interviewDate}
+                  onChange={(e) =>
+                    setInterviewDate(e.target.value)
+                  }
+                  InputLabelProps={{
+                    shrink: true,
+                  }}
+                  sx={{
+                    mb: 2,
+
+                    "& .MuiOutlinedInput-root": {
+                      borderRadius: 2,
+                      bgcolor: "#fff",
+                      fontWeight: 700,
+                    },
+                  }}
+                  InputProps={{
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <CalendarMonthIcon
+                          sx={{
+                            color: "#64748b",
+                          }}
+                        />
+                      </InputAdornment>
+                    ),
+                  }}
+                />
+
+                <Button
+                  fullWidth
+                  variant="contained"
+                  onClick={
+                    handleInterviewSchedule
+                  }
+                  sx={{
+                    py: 1.3,
+                    borderRadius: 2.5,
+                    textTransform: "none",
+                    fontWeight: 800,
+                    fontSize: 15,
+                    background:
+                      "linear-gradient(135deg, #2563eb 0%, #1e3a8a 100%)",
+                    boxShadow:
+                      "0 8px 20px rgba(37,99,235,0.25)",
+
+                    "&:hover": {
+                      background:
+                        "linear-gradient(135deg, #1d4ed8 0%, #172554 100%)",
+                    },
+                  }}
+                >
+                  Schedule Interview
                 </Button>
               </Box>
             </Paper>

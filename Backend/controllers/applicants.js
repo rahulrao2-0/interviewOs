@@ -1,6 +1,8 @@
 import db from "../config/db.js";
 import ExpressError from "../ExpressError.js";
 
+import SendEmail from "../utils/SendEmail.js";
+
 export const applicants = async (req, res, next) => {
   try {
     console.log("applicant api hit")
@@ -175,10 +177,46 @@ export const applicantFullDetail = async(req,res,next)=>{
       return next(new ExpressError("Applicant ID is required",400));
     }
 
-    const [rows]= await db.execute(
-      `SELECT * FROM student_details WHERE student_id = ?`,
-      [applicantId]
-    );
+    const [rows] = await db.execute(
+  `SELECT 
+      sd.student_details_id,
+      sd.student_id,
+      sd.full_name,
+      sd.phone_number,
+      sd.degree_branch,
+      sd.email_address,
+      sd.college_university,
+      sd.graduation_year,
+      sd.cgpa,
+      sd.skills,
+      sd.linkedin_profile,
+      sd.resume_link_portfolio,
+
+      a.app_id,
+      a.status AS application_status,
+      a.applied_at,
+
+      j.job_id,
+      j.company,
+      j.job_name,
+      j.experience,
+      j.job_type,
+      j.description,
+      j.role,
+      j.min_salary,
+      j.max_salary
+
+   FROM student_details sd
+
+   LEFT JOIN applications a
+      ON sd.student_id = a.user_id
+
+   LEFT JOIN jobs j
+      ON a.job_id = j.job_id
+
+   WHERE sd.student_id = ?`,
+  [applicantId]
+);
 
     console.log("Applicant full detail fetched for applicant ID:", applicantId, "Result:", rows);
 
@@ -486,6 +524,166 @@ export const getProfile = async (req, res, next) => {
   } catch (err) {
     console.log("Get Profile Error:", err);
     next(new expressError("Failed to fetch profile", 500));
+  }
+};
+
+export const updateSelectionStatus = async (req, res, next) => {
+  try {
+    console.log("Update selection status API hit with body:", req.body);
+
+    const { application_id, status } = req.body;
+
+    if (!application_id || !status) {
+      return next(
+        new ExpressError(
+          "Application ID and status are required",
+          400
+        )
+      );
+    }
+
+    const validStatus = [
+      "applied",
+      "shortlisted",
+      "rejected",
+      "selected",
+    ];
+
+    if (!validStatus.includes(status)) {
+      return next(
+        new ExpressError("Invalid status value", 400)
+      );
+    }
+
+    // get applicant + job details
+    const [applicationRows] = await db.execute(
+      `SELECT 
+          a.name,
+          a.email,
+          j.job_name,
+          j.company
+       FROM applications a
+       JOIN jobs j
+          ON a.job_id = j.job_id
+       WHERE a.app_id = ?`,
+      [application_id]
+    );
+
+    if (applicationRows.length === 0) {
+      return next(
+        new ExpressError("Application not found", 404)
+      );
+    }
+
+    const applicant = applicationRows[0];
+    console.log("Applicant details for status update:", applicant);
+
+    // update status
+    await db.execute(
+      `UPDATE applications
+       SET status = ?
+       WHERE app_id = ?`,
+      [status, application_id]
+    );
+
+    // email subject
+    let subject = "";
+
+    // email html
+    let html = "";
+
+    if (status === "shortlisted") {
+      subject = "Application Shortlisted";
+
+      html = `
+        <h2>Hello ${applicant.name},</h2>
+
+        <p>
+          Congratulations! You have been shortlisted for the role of
+          <b>${applicant.job_name}</b>
+          at <b>${applicant.company}</b>.
+        </p>
+
+        <p>
+          Our team will contact you soon regarding the next steps.
+        </p>
+
+        <br/>
+
+        <p>InterviewOS Team</p>
+      `;
+    }
+
+    else if (status === "selected") {
+      subject = "Application Selected";
+
+      html = `
+        <h2>Hello ${applicant.name},</h2>
+
+        <p>
+          Congratulations! You have been selected for the role of
+          <b>${applicant.job_name}</b>
+          at <b>${applicant.company}</b>.
+        </p>
+
+        <p>
+          We are excited to have you onboard.
+        </p>
+
+        <br/>
+
+        <p>InterviewOS Team</p>
+      `;
+    }
+
+    else if (status === "rejected") {
+      subject = "Application Update";
+
+      html = `
+        <h2>Hello ${applicant.name},</h2>
+
+        <p>
+          Thank you for applying for
+          <b>${applicant.job_name}</b>
+          at <b>${applicant.company}</b>.
+        </p>
+
+        <p>
+          After careful review, we regret to inform you that
+          you were not selected for this role.
+        </p>
+
+        <p>
+          We encourage you to apply again in the future.
+        </p>
+
+        <br/>
+
+        <p>InterviewOS Team</p>
+      `;
+    }
+
+    // send email
+    await SendEmail({
+      to: applicant.email,
+      subject,
+      html,
+    });
+
+    res.status(200).json({
+      success: true,
+      message: "Selection status updated successfully",
+    });
+
+  } catch (err) {
+    console.log("Update Selection Status Error:", err);
+
+    next(
+      new ExpressError(
+        "Failed to update selection status",
+        500
+      )
+    );
   }
 };
 

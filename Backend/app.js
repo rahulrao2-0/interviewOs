@@ -72,6 +72,7 @@ app.use("/api",aiInterviewRoutes)
 app.use("/api",interviewerDashboardRoutes)
 // ✅ SOCKET
 chatSocket(io);
+export { io };
 
 app.use((err, req, res, next) => {
   const { statusCode = 500, message = "Something went wrong" } = err;
