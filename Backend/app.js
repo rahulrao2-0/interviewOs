@@ -74,6 +74,10 @@ app.use("/api",interviewerDashboardRoutes)
 chatSocket(io);
 export { io };
 
+app.get("/test", (req, res) => {
+  res.json({ message: "API is working!" });
+});
+
 app.use((err, req, res, next) => {
   const { statusCode = 500, message = "Something went wrong" } = err;
 
