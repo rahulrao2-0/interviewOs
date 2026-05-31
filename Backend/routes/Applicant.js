@@ -6,7 +6,7 @@ import { MyApplications,getInterviewerInboxUsers,getStudentInboxUsers , applican
      
 } from "../controllers/applicants.js";
 import ExpressError from "../ExpressError.js";
-import  redis from "../redis.js";
+
 const router = express.Router();
 
 router.get("/applicants",interviewervalidation,applicants)
