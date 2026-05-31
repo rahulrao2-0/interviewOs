@@ -396,3 +396,51 @@ Date: ${formattedDate}
     );
   }
 };
+
+export const getScheduledInterviews = async (req,res,next)=>{
+  console.log("Get Scheduled Interviews API hit for interviewer ID:", req.user.id);
+  try{
+    const interviewer_id = req.user.id;
+
+    const [interviews] = await db.execute(
+  `SELECT
+      i.interview_id,
+      i.scheduled_at,
+      i.status,
+      i.meeting_link,
+
+      a.app_id,
+      a.user_id AS student_id,
+
+      sd.full_name AS student_name,
+
+      j.job_name,
+      j.company
+
+   FROM interviews i
+
+   JOIN applications a
+      ON i.app_id = a.app_id
+
+   JOIN student_details sd
+      ON a.user_id = sd.student_id
+
+   JOIN jobs j
+      ON a.job_id = j.job_id
+
+   WHERE i.interviewer_id = ?
+
+   ORDER BY i.scheduled_at DESC`,
+  [interviewer_id]
+);
+
+    res.status(200).json({
+      success: true,
+      interviews,
+    });
+
+  }catch(err){
+    console.log("Get Scheduled Interviews Error:", err);
+    next(new ExpressError("Failed to fetch scheduled interviews", 500));
+  }
+}

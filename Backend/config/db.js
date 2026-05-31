@@ -1,15 +1,26 @@
 import mysql from "mysql2/promise";
+import dotenv from "dotenv";
+
+dotenv.config();
 
 const db = mysql.createPool({
-  host: "localhost",
-  user: "root",
-  password: "yadavrahul20",
-  database: "interviewOS",
+  host: process.env.DB_HOST,
+  port: process.env.DB_PORT,
+  user: process.env.DB_USER,
+  password: process.env.DB_PASSWORD,
+  database: process.env.DB_NAME,
   waitForConnections: true,
   connectionLimit: 10,
-  queueLimit: 0
+  queueLimit: 0,
 });
 
-console.log("MySQL Pool Connected ✅");
+try {
+  const connection = await db.getConnection();
+  console.log("MySQL Pool Connected ✅");
+  connection.release();
+} catch (err) {
+  console.error("Database Connection Failed ❌");
+  console.error(err.message);
+}
 
 export default db;

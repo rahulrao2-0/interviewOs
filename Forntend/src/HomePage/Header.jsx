@@ -18,10 +18,11 @@ import { useEffect , useState } from 'react';
 import {useAuth} from '../AuthContext';
 import MailIcon from "@mui/icons-material/Mail";
 import "./Header.css";
+import { Dashboard } from '@mui/icons-material';
 
 
 const pages = ['Products', 'Pricing', 'Blog'];
-const settings = ['Profile', 'My Applications', 'Help', 'Logout'];
+const settings = ['Profile', 'My Applications', 'Dashboard', 'Help', 'Logout'];
 
 function Header() {
   const [anchorElNav, setAnchorElNav] = React.useState(null);
@@ -68,6 +69,8 @@ function Header() {
     }
   }
 
+  console.log("User in Header:", user);
+
   const handleStudentMessages = () => {
     if(user?.user.user_id){
       navigate(`/student/messages/${user.user.user_id}`);
@@ -95,6 +98,13 @@ function Header() {
     }
     if(item === "My Applications"){
       navigate("/my-applications");
+    }
+    if(item === "Dashboard"){
+      if(user?.user?.role === "user"){
+        navigate(`/profile/${user?.user?.user_id}`);
+      }else if(user?.user?.role === "interviewer"){
+        navigate("/interviewer/dashboard");
+      }
     }
     if(item === "Help"){  
       navigate("/help");  

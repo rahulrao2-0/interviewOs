@@ -16,15 +16,40 @@ import {
 import MenuIcon from "@mui/icons-material/Menu";
 import NotificationsIcon from "@mui/icons-material/Notifications";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "../AuthContext";
 
 const pages = ["Jobs", "Companies", "About"];
-const settings = ["Profile", "Dashboard", "Logout"];
+const settings = ["Home", "Help", "Logout"];
 
 export default function Header({ handleDrawerToggle }) {
   const [anchorElUser, setAnchorElUser] = React.useState(null);
   const navigate = useNavigate();
+  const { user } = useAuth();
 
-  const userName = "Rahul";
+   const handleUserMenuClick = (item) => {
+    if (item === "Home") {
+      navigate("/");
+    }
+    if (item === "Help") {
+      navigate("/help");
+    }
+    if (item === "Logout") {
+      const logout = async () => {
+        const response = await fetch("http://localhost:5000/api/logout", {
+          method: "GET",
+          credentials: "include",
+        });
+        const data = await response.json();
+        console.log("Logout response:", data);
+      };
+      logout();
+      navigate("/login");
+    }
+  };
+
+  console.log(user?.user?.username )
+
+  const userName = user?.user?.username || "N/A";
 
   const handleOpenUserMenu = (event) => {
     setAnchorElUser(event.currentTarget);
@@ -93,7 +118,7 @@ export default function Header({ handleDrawerToggle }) {
           <Tooltip title="Open settings">
             <IconButton onClick={handleOpenUserMenu}>
               <Avatar sx={{ bgcolor: "#fff", color: "#b71c1c" }}>
-                R
+                {userName.charAt(0).toUpperCase()}
               </Avatar>
             </IconButton>
           </Tooltip>
@@ -104,7 +129,7 @@ export default function Header({ handleDrawerToggle }) {
             onClose={handleCloseUserMenu}
           >
             {settings.map((setting) => (
-              <MenuItem key={setting} onClick={handleCloseUserMenu}>
+              <MenuItem key={setting} onClick={() => handleUserMenuClick(setting)}>
                 {setting}
               </MenuItem>
             ))}

@@ -20,9 +20,10 @@ import {
 } from "@mui/icons-material";
 import { useEffect, useState } from "react";
 import { useAuth } from "../AuthContext";
-
+import { useNavigate } from "react-router-dom";
 export default function DashboardHome({ setActiveView }) {
   const { user } = useAuth();
+  const navigate = useNavigate();
 
   const [stats, setStats] = useState(null);
   const [recentJobs, setRecentJobs] = useState([]);
@@ -182,7 +183,7 @@ export default function DashboardHome({ setActiveView }) {
           <Button
             variant="contained"
             startIcon={<Add />}
-            onClick={() => setActiveView("Post Job")}
+            onClick={() => navigate("/interviewer/addPost")}
             sx={{
               bgcolor: "#fff",
               color: "#1976d2",
