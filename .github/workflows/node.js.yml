@@ -10,27 +10,39 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
+      - name: Checkout Repository
         uses: actions/checkout@v4
 
-      - name: Setup Node
+      - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
 
-      - name: Install dependencies
+      - name: Install Dependencies
         run: npm install
         working-directory: ./Forntend
 
-      - name: Build project
+      - name: Build Frontend
         run: npm run build
         working-directory: ./Forntend
 
-      - name: Copy dist to EC2
+      # SSH STEP (clean old build)
+      - name: Clean old dist on server
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.EC2_HOST }}
+          key: ${{ secrets.EC2_KEY }}
+          script: |
+            rm -rf /home/ubuntu/frontend/Forntend/dist
+
+      # SCP DEPLOY STEP
+      - name: Deploy via SCP
         uses: appleboy/scp-action@v0.1.7
         with:
-          host: ${{ secrets.EC2_HOST }}
-          username: ubuntu
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.EC2_HOST }}
           key: ${{ secrets.EC2_KEY }}
           source: "Forntend/dist/*"
-          target: "/home/ubuntu/frontend"
+          target: "/home/ubuntu/frontend/Forntend/dist"
+          overwrite: true
