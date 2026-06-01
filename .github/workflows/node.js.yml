@@ -10,27 +10,23 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # 1. Checkout code
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-      # 2. Setup Node
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 22
 
-      # 3. Install dependencies
       - name: Install Dependencies
         run: npm install
         working-directory: ./Forntend
 
-      # 4. Build frontend
       - name: Build Frontend
         run: npm run build
         working-directory: ./Forntend
 
-      # 5. Clean old build on EC2 (IMPORTANT FIX)
+      # SSH STEP (clean old build)
       - name: Clean old dist on server
         uses: appleboy/ssh-action@v1.0.3
         with:
@@ -40,7 +36,7 @@ jobs:
           script: |
             rm -rf /home/ubuntu/frontend/Forntend/dist
 
-      # 6. Deploy new build to EC2
+      # SCP DEPLOY STEP
       - name: Deploy via SCP
         uses: appleboy/scp-action@v0.1.7
         with:
