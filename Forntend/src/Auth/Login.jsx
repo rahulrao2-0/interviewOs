@@ -22,35 +22,74 @@ export default function Login() {
   };
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
-    setLoading(true);
-    setError('');
+  e.preventDefault();
 
-    try {
-      const response = await fetch("http://ec2-13-126-64-8.ap-south-1.compute.amazonaws.com:5000/api/login", {
+  setError("");
+
+  // Frontend validation
+  if (!form.username.trim()) {
+    setError("Username is required");
+    return;
+  }
+
+  if (!form.password.trim()) {
+    setError("Password is required");
+    return;
+  }
+
+  setLoading(true);
+
+  try {
+    const response = await fetch(
+      "http://ec2-13-126-64-8.ap-south-1.compute.amazonaws.com:5000/api/login",
+      {
         method: "POST",
         credentials: "include",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form)
-      })
-
-      const res = await response.json();
-      console.log("Response", res)
-      if (res.message === "User successfully Logged in") {
-        await checkAuth();
-        navigate("/profileSetup", { replace: true })
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          username: form.username.trim(),
+          password: form.password,
+        }),
       }
+    );
 
+    const res = await response.json();
 
-      console.log('Login submitted:', form);
-      setForm({ username: "", password: "" })
-    } catch (err) {
-      setError('Invalid username or password. Please try again.');
-    } finally {
-      setLoading(false);
+    console.log("Login Response:", res);
 
+    // Handle backend errors
+    if (!response.ok) {
+      setError(res.message || "Login failed");
+      return;
     }
-  };
+
+    // Successful login
+    if (res.success) {
+      await checkAuth();
+
+      setForm({
+        username: "",
+        password: "",
+      });
+
+      navigate("/profileSetup", {
+        replace: true,
+      });
+    } else {
+      setError(res.message || "Login failed");
+    }
+  } catch (err) {
+    console.error("Login Error:", err);
+
+    setError(
+      "Unable to connect to the server. Please try again later."
+    );
+  } finally {
+    setLoading(false);
+  }
+};
 
   return (
     <div className="login-page">

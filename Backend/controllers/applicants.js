@@ -24,6 +24,16 @@ export const applicants = async (req, res, next) => {
    WHERE j.posted_by = ?`,
   [req.user.id] // interviewer ID
    );
+
+   if (applications.length === 0) {
+      return res.status(200).json({
+        success: true,
+        count: 0,
+        data: [],
+      });
+    }
+
+    
     // ✅ Send response
     return res.status(200).json({
       success: true,

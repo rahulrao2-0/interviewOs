@@ -93,60 +93,81 @@ export const Signup = async (req, res, next) => {
     return next(new ExpressError(500, "Internal Server Error"));
   }
 };
-export const Login = async(req,res,next)=>{
-  console.log("Login API hit")
-    try{
-        const {username,password}=req.body;
 
-        if (!username || !password) {
-        return next(new ExpressError(400, 'Username and password are required'));
-       }
+export const Login = async (req, res, next) => {
+  console.log("Login API hit");
 
-        const [existing] = await db.execute(
-            'SELECT user_id, password FROM users WHERE username = ?',
-            [username]
-        )
+  try {
+    const { username, password } = req.body;
 
-        console.log("Existing user in login route",existing)
-
-        // console.log("user in login route",existing)
-        if(existing.length===0){
-                return next(new ExpressError(401, 'Invalid username or password'));
-
-        }
-        // const isMatch = await bcrypt.compare(password, existing[0].password);
-        // if (!isMatch) {
-        // return next(new ExpressError(401, 'Invalid  password'));
-        // }
-        // console.log("user id i login route",existing[0].user_id)
-        const user= {
-            id:existing[0].user_id,
-            role:'user'
-        }
-        if(existing){
-            const token = createToken(user)
-            res.cookie("token",token,{
-                httpOnly:true,
-                secure:false,
-                sameSite:"lax",
-                maxAge:24 * 60 * 60 * 1000
-            })
-
-            res.status(200).json({
-              jwtToken:token,
-              message:"User successfully Logged in"
-            })
-        }else{
-            return next(new ExpressError("404","user not Found ! Please Signup before login"))
-        }
-
-
-    }catch(err){
-        console.log(err)
-       res.status(500).json("Something went wrong")
+    // Validation
+    if (!username || !password) {
+      return next(
+        new ExpressError(400, "Username and password are required")
+      );
     }
 
-}
+    // Find user
+    const [users] = await db.execute(
+      `SELECT user_id, username, password 
+       FROM users 
+       WHERE username = ?`,
+      [username]
+    );
+
+    if (users.length === 0) {
+      return next(
+        new ExpressError(401, "Invalid username or password")
+      );
+    }
+
+    const user = users[0];
+
+    // Password verification
+    const isMatch = await bcrypt.compare(
+      password,
+      user.password
+    );
+
+    if (!isMatch) {
+      return next(
+        new ExpressError(401, "Invalid username or password")
+      );
+    }
+
+    // JWT Payload
+    const payload = {
+      id: user.user_id,
+      role: "user",
+    };
+
+    const token = createToken(payload);
+
+    // Cookie
+    res.cookie("token", token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      maxAge: 24 * 60 * 60 * 1000, // 1 day
+    });
+
+    return res.status(200).json({
+      success: true,
+      message: "User successfully logged in",
+      jwtToken: token,
+    });
+
+  } catch (err) {
+    console.error("Login Error:", err);
+
+    return next(
+      new ExpressError(
+        500,
+        "Internal server error while logging in"
+      )
+    );
+  }
+};
 
 export const logout = (req, res) => {
   console.log("Logout api hit")
