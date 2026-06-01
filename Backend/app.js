@@ -23,7 +23,7 @@ app.use(cookieParser());
 
 
 const allowedOrigins = [
-  "http://localhost:5173",
+  
   "http://ec2-13-126-64-8.ap-south-1.compute.amazonaws.com"
 ];
 
