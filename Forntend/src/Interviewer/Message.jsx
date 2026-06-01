@@ -27,10 +27,10 @@ export default function Message({ selectedApplicant }) {
   useEffect(() => { selectedUserRef.current = selectedUser; }, [selectedUser]);
   useEffect(() => { myIdRef.current = myId; }, [myId]);
 
- 
+
   const getChatMessages = async (userId) => {
     try {
-      const response = await fetch(`http://localhost:5000/api/chat/${userId}`, {
+      const response = await fetch(`http://ec2-13-126-64-8.ap-south-1.compute.amazonaws.com:5000/api/chat/${userId}`, {
         method: "GET",
         credentials: "include",
       });
@@ -57,20 +57,20 @@ export default function Message({ selectedApplicant }) {
     }
   };
 
-   useEffect(() => {
-    if(selectedApplicant?.user_id){
+  useEffect(() => {
+    if (selectedApplicant?.user_id) {
       setSelectedUser(selectedApplicant);
       getChatMessages(selectedApplicant.user_id);
-    }else{
+    } else {
       return;
-        }
-   },[selectedApplicant])
+    }
+  }, [selectedApplicant])
 
 
   // ✅ FIXED: handle all possible key names from /api/me
   useEffect(() => {
     const fetchData = async () => {
-      const response = await fetch("http://localhost:5000/api/me", { credentials: "include" });
+      const response = await fetch("http://ec2-13-126-64-8.ap-south-1.compute.amazonaws.com:5000/api/me", { credentials: "include" });
       const data = await response.json();
 
       console.log("FULL /api/me response:", data); // remove after confirming
@@ -87,7 +87,7 @@ export default function Message({ selectedApplicant }) {
   // ✅ Fetch users
   useEffect(() => {
     const fetchData = async () => {
-      const response = await fetch("http://localhost:5000/api/interviewer-inbox-users", { credentials: "include" });
+      const response = await fetch("http://ec2-13-126-64-8.ap-south-1.compute.amazonaws.com:5000/api/interviewer-inbox-users", { credentials: "include" });
       const res = await response.json();
       if (res.success) {
         setUsers(res.users);
@@ -96,7 +96,7 @@ export default function Message({ selectedApplicant }) {
       }
     };
     fetchData();
-    
+
   }, []);
 
   // ✅ Receive message
@@ -147,7 +147,7 @@ export default function Message({ selectedApplicant }) {
     if (!input.trim() || !selectedUser || !myId) return;
 
     try {
-      fetch("http://localhost:5000/api/save-message", {
+      fetch("http://ec2-13-126-64-8.ap-south-1.compute.amazonaws.com:5000/api/save-message", {
         method: "POST",
         credentials: "include",
         headers: { "Content-Type": "application/json" },

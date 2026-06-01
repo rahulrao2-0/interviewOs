@@ -35,7 +35,7 @@ export default function Jobs() {
   useEffect(() => {
     const fetchJobs = async () => {
       try {
-        const res = await fetch("http://localhost:5000/api/my-jobs", {
+        const res = await fetch("http://ec2-13-126-64-8.ap-south-1.compute.amazonaws.com:5000/api/my-jobs", {
           credentials: "include",
         });
         const data = await res.json();
@@ -62,7 +62,7 @@ export default function Jobs() {
 
     try {
       const res = await fetch(
-        `http://localhost:5000/api/delete-job/${job_id}`,
+        `http://ec2-13-126-64-8.ap-south-1.compute.amazonaws.com:5000/api/delete-job/${job_id}`,
         {
           method: "DELETE",
           credentials: "include",

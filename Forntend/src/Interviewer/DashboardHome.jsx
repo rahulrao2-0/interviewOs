@@ -37,8 +37,8 @@ export default function DashboardHome({ setActiveView }) {
   useEffect(() => {
     const fetchDashboard = async () => {
       try {
-        const res = await fetch("http://localhost:5000/api/dashboard", {
-            method: "GET",
+        const res = await fetch("http://ec2-13-126-64-8.ap-south-1.compute.amazonaws.com:5000/api/dashboard", {
+          method: "GET",
           credentials: "include",
         });
         const data = await res.json();
@@ -65,35 +65,35 @@ export default function DashboardHome({ setActiveView }) {
   ───────────────────────────── */
   const statCards = stats
     ? [
-        {
-          label: "Total Jobs Posted",
-          value: stats.total_jobs,
-          icon: <Work sx={{ fontSize: 28 }} />,
-          color: "#1976d2",
-          bg: "#dbeafe",
-        },
-        {
-          label: "Total Applicants",
-          value: stats.total_applicants,
-          icon: <People sx={{ fontSize: 28 }} />,
-          color: "#d97706",
-          bg: "#fef3c7",
-        },
-        {
-          label: "Shortlisted",
-          value: stats.shortlisted,
-          icon: <CheckCircle sx={{ fontSize: 28 }} />,
-          color: "#16a34a",
-          bg: "#dcfce7",
-        },
-        {
-          label: "Rejected",
-          value: stats.rejected,
-          icon: <Cancel sx={{ fontSize: 28 }} />,
-          color: "#dc2626",
-          bg: "#fee2e2",
-        },
-      ]
+      {
+        label: "Total Jobs Posted",
+        value: stats.total_jobs,
+        icon: <Work sx={{ fontSize: 28 }} />,
+        color: "#1976d2",
+        bg: "#dbeafe",
+      },
+      {
+        label: "Total Applicants",
+        value: stats.total_applicants,
+        icon: <People sx={{ fontSize: 28 }} />,
+        color: "#d97706",
+        bg: "#fef3c7",
+      },
+      {
+        label: "Shortlisted",
+        value: stats.shortlisted,
+        icon: <CheckCircle sx={{ fontSize: 28 }} />,
+        color: "#16a34a",
+        bg: "#dcfce7",
+      },
+      {
+        label: "Rejected",
+        value: stats.rejected,
+        icon: <Cancel sx={{ fontSize: 28 }} />,
+        color: "#dc2626",
+        bg: "#fee2e2",
+      },
+    ]
     : [];
 
   /* ─────────────────────────────

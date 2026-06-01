@@ -64,7 +64,7 @@ const OTPVerification = () => {
       console.log("Entered OTP:", enteredOtp);
 
       const response = await fetch(
-        "http://localhost:5000/api/verify-otp",
+        "http://ec2-13-126-64-8.ap-south-1.compute.amazonaws.com:5000/api/verify-otp",
         {
           method: "POST",
           headers: {

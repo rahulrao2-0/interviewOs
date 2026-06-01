@@ -26,7 +26,7 @@ export default function Header({ handleDrawerToggle }) {
   const navigate = useNavigate();
   const { user } = useAuth();
 
-   const handleUserMenuClick = (item) => {
+  const handleUserMenuClick = (item) => {
     if (item === "Home") {
       navigate("/");
     }
@@ -35,7 +35,7 @@ export default function Header({ handleDrawerToggle }) {
     }
     if (item === "Logout") {
       const logout = async () => {
-        const response = await fetch("http://localhost:5000/api/logout", {
+        const response = await fetch("http://ec2-13-126-64-8.ap-south-1.compute.amazonaws.com:5000/api/logout", {
           method: "GET",
           credentials: "include",
         });
@@ -47,7 +47,7 @@ export default function Header({ handleDrawerToggle }) {
     }
   };
 
-  console.log(user?.user?.username )
+  console.log(user?.user?.username)
 
   const userName = user?.user?.username || "N/A";
 
@@ -103,7 +103,7 @@ export default function Header({ handleDrawerToggle }) {
           </IconButton>
 
           <Button
-            onClick={()=>navigate("/interviewer/addPost")}
+            onClick={() => navigate("/interviewer/addPost")}
             variant="contained"
             sx={{
               backgroundColor: "#fff",

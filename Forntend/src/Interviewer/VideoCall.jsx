@@ -23,21 +23,21 @@ import {
   VideocamOff,
 } from "@mui/icons-material";
 
-import {useAuth} from "../AuthContext.jsx"
+import { useAuth } from "../AuthContext.jsx"
 
-const socket = io("http://localhost:5000", {
+const socket = io("http://ec2-13-126-64-8.ap-south-1.compute.amazonaws.com:5000", {
   withCredentials: true,
 });
 
 export default function VideoCall() {
   const { roomId } = useParams();
 
-  const{user} = useAuth();
+  const { user } = useAuth();
 
   console.log(user?.user?.user_id)
-  
 
-  
+
+
 
   const navigate = useNavigate();
 
@@ -71,9 +71,9 @@ export default function VideoCall() {
     ],
   };
 
-  if(user?.user?.role === "interviewer"){
+  if (user?.user?.role === "interviewer") {
     userRef.current = true;
-    
+
   }
 
   // ================= START CAMERA =================
@@ -137,7 +137,7 @@ export default function VideoCall() {
   const handleSend = async () => {
     try {
       const response = await fetch(
-        "http://localhost:5000/api/interviewer-inbox-users",
+        "http://ec2-13-126-64-8.ap-south-1.compute.amazonaws.com:5000/api/interviewer-inbox-users",
         {
           method: "GET",
           credentials: "include",
@@ -158,11 +158,11 @@ export default function VideoCall() {
 
   // ================= SEND ROOM ID =================
 
-  const interviewLink = `http://localhost:5173/call/${roomId}`;
+  const interviewLink = `http://ec2-13-126-64-8.ap-south-1.compute.amazonaws.com:5173/call/${roomId}`;
 
   const handleSendRoomId = async (receiverId) => {
 
-  const message = `
+    const message = `
   You are invited to an interview.
 
   Room ID: ${roomId}
@@ -171,27 +171,27 @@ export default function VideoCall() {
   ${interviewLink}
   `;
 
-   await fetch("http://localhost:5000/api/save-message", {
-  method: "POST",
+    await fetch("http://ec2-13-126-64-8.ap-south-1.compute.amazonaws.com:5000/api/save-message", {
+      method: "POST",
 
-  credentials: "include",
+      credentials: "include",
 
-  headers: {
-    "Content-Type": "application/json",
-  },
+      headers: {
+        "Content-Type": "application/json",
+      },
 
-  body: JSON.stringify({
-    receiverId,
-    text: message,
-  }),
-  });
+      body: JSON.stringify({
+        receiverId,
+        text: message,
+      }),
+    });
 
-  socket.emit("send_message", {
-  receiverId,
-  text: message,
-  });
+    socket.emit("send_message", {
+      receiverId,
+      text: message,
+    });
 
-  setOpenInbox(false);
+    setOpenInbox(false);
 
   }
 

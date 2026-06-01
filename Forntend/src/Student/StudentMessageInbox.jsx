@@ -45,7 +45,7 @@ export default function StudentMessageInbox() {
 
   const getChatMessages = async (userId) => {
     try {
-      const res = await fetch(`http://localhost:5000/api/chat/${userId}`, {
+      const res = await fetch(`http://ec2-13-126-64-8.ap-south-1.compute.amazonaws.com:5000/api/chat/${userId}`, {
         method: "GET",
         credentials: "include",
       });
@@ -69,7 +69,7 @@ export default function StudentMessageInbox() {
   useEffect(() => {
     const fetchMe = async () => {
       try {
-        const res = await fetch("http://localhost:5000/api/me", {
+        const res = await fetch("http://ec2-13-126-64-8.ap-south-1.compute.amazonaws.com:5000/api/me", {
           credentials: "include",
         });
 
@@ -97,7 +97,7 @@ export default function StudentMessageInbox() {
     const fetchInterviewers = async () => {
       try {
         const res = await fetch(
-          "http://localhost:5000/api/student-inbox-users",
+          "http://ec2-13-126-64-8.ap-south-1.compute.amazonaws.com:5000/api/student-inbox-users",
           {
             method: "GET",
             credentials: "include",
@@ -201,7 +201,7 @@ export default function StudentMessageInbox() {
     });
 
     // Save to DB in background — don't block real-time on this
-    fetch("http://localhost:5000/api/save-message", {
+    fetch("http://ec2-13-126-64-8.ap-south-1.compute.amazonaws.com:5000/api/save-message", {
       method: "POST",
       credentials: "include",
       headers: {

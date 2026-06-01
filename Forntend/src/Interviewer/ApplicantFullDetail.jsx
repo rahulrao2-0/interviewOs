@@ -33,7 +33,7 @@ export default function ApplicantFullDetail() {
     const fetchApplicantDetail = async () => {
       try {
         const response = await fetch(
-          `http://localhost:5000/api/applicantFullDetail/${applicantId}`,
+          `http://ec2-13-126-64-8.ap-south-1.compute.amazonaws.com:5000/api/applicantFullDetail/${applicantId}`,
           {
             method: "GET",
             credentials: "include",
@@ -58,7 +58,7 @@ export default function ApplicantFullDetail() {
   const handleSelectionUpdate = async (status) => {
     try {
       const response = await fetch(
-        `http://localhost:5000/api/updateSelectionStatus`,
+        `http://ec2-13-126-64-8.ap-south-1.compute.amazonaws.com:5000/api/updateSelectionStatus`,
         {
           method: "PUT",
 
@@ -94,9 +94,9 @@ export default function ApplicantFullDetail() {
         return alert("Please select interview date and time");
       }
 
-      const response = await fetch(`http://localhost:5000/api/schedule-interview`,{
-        method:"POST",
-        credentials:"include",
+      const response = await fetch(`http://ec2-13-126-64-8.ap-south-1.compute.amazonaws.com:5000/api/schedule-interview`, {
+        method: "POST",
+        credentials: "include",
         headers: {
           "Content-Type": "application/json",
         },
@@ -165,14 +165,14 @@ export default function ApplicantFullDetail() {
 
   const skills = applicantDetail.skills
     ? applicantDetail.skills
-        .split(",")
-        .map((skill) => skill.trim())
+      .split(",")
+      .map((skill) => skill.trim())
     : [];
 
   const createdDate = applicantDetail.created_at
     ? new Date(
-        applicantDetail.created_at
-      ).toLocaleDateString("en-IN")
+      applicantDetail.created_at
+    ).toLocaleDateString("en-IN")
     : "N/A";
 
   return (

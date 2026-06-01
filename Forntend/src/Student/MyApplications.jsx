@@ -18,7 +18,7 @@ export default function MyApplications() {
   useEffect(() => {
     const fetchApplications = async () => {
       try {
-        const res = await fetch("http://localhost:5000/api/my-applications", {
+        const res = await fetch("http://ec2-13-126-64-8.ap-south-1.compute.amazonaws.com:5000/api/my-applications", {
           method: "GET",
           credentials: "include",
         });
@@ -151,10 +151,10 @@ export default function MyApplications() {
                       Applied on{" "}
                       {app.date
                         ? new Date(app.date).toLocaleDateString("en-IN", {
-                            day: "numeric",
-                            month: "short",
-                            year: "numeric",
-                          })
+                          day: "numeric",
+                          month: "short",
+                          year: "numeric",
+                        })
                         : "Date not available"}
                     </Typography>
                   </Box>

@@ -25,7 +25,7 @@ export default function ScheduledInterview({ setActiveView }) {
     const fetchInterviews = async () => {
       try {
         const res = await fetch(
-          "http://localhost:5000/api/getScheduledInterviews",
+          "http://ec2-13-126-64-8.ap-south-1.compute.amazonaws.com:5000/api/getScheduledInterviews",
           {
             method: "GET",
             credentials: "include",
@@ -105,23 +105,23 @@ export default function ScheduledInterview({ setActiveView }) {
         }}
       >
         {/* Decorative blobs */}
-        <Box sx={{ position:"absolute", top:-40, right:-40, width:200, height:200, borderRadius:"50%", background:"rgba(255,255,255,0.05)", pointerEvents:"none" }} />
-        <Box sx={{ position:"absolute", bottom:-60, right:80, width:140, height:140, borderRadius:"50%", background:"rgba(255,255,255,0.04)", pointerEvents:"none" }} />
+        <Box sx={{ position: "absolute", top: -40, right: -40, width: 200, height: 200, borderRadius: "50%", background: "rgba(255,255,255,0.05)", pointerEvents: "none" }} />
+        <Box sx={{ position: "absolute", bottom: -60, right: 80, width: 140, height: 140, borderRadius: "50%", background: "rgba(255,255,255,0.04)", pointerEvents: "none" }} />
 
-        <Typography variant="h4" fontWeight={800} letterSpacing={-0.5} sx={{ position:"relative" }}>
+        <Typography variant="h4" fontWeight={800} letterSpacing={-0.5} sx={{ position: "relative" }}>
           Scheduled Interviews
         </Typography>
 
-        <Typography sx={{ mt:1, maxWidth:680, opacity:0.75, lineHeight:1.7, fontSize:14.5, position:"relative" }}>
+        <Typography sx={{ mt: 1, maxWidth: 680, opacity: 0.75, lineHeight: 1.7, fontSize: 14.5, position: "relative" }}>
           Manage all your candidate interviews in one place. Track schedules,
           monitor status, and stay organized with your hiring process.
         </Typography>
 
-        <Box sx={{ mt:3, display:"flex", gap:2, flexWrap:"wrap", position:"relative" }}>
-          <StatCard title="Total"     value={totalInterviews} accent="#60a5fa" />
-          <StatCard title="Scheduled" value={scheduledCount}  accent="#93c5fd" />
-          <StatCard title="Completed" value={completedCount}  accent="#34d399" />
-          <StatCard title="Cancelled" value={cancelledCount}  accent="#f87171" />
+        <Box sx={{ mt: 3, display: "flex", gap: 2, flexWrap: "wrap", position: "relative" }}>
+          <StatCard title="Total" value={totalInterviews} accent="#60a5fa" />
+          <StatCard title="Scheduled" value={scheduledCount} accent="#93c5fd" />
+          <StatCard title="Completed" value={completedCount} accent="#34d399" />
+          <StatCard title="Cancelled" value={cancelledCount} accent="#f87171" />
         </Box>
       </Paper>
 
@@ -134,9 +134,9 @@ export default function ScheduledInterview({ setActiveView }) {
           overflowX: "hidden",
           pr: 1,
 
-          "&::-webkit-scrollbar":             { width: "6px" },
-          "&::-webkit-scrollbar-track":       { background: "transparent" },
-          "&::-webkit-scrollbar-thumb":       { background: "#93c5fd", borderRadius: "999px" },
+          "&::-webkit-scrollbar": { width: "6px" },
+          "&::-webkit-scrollbar-track": { background: "transparent" },
+          "&::-webkit-scrollbar-thumb": { background: "#93c5fd", borderRadius: "999px" },
           "&::-webkit-scrollbar-thumb:hover": { background: "#2563eb" },
           scrollbarWidth: "thin",
           scrollbarColor: "#93c5fd transparent",
@@ -185,8 +185,8 @@ export default function ScheduledInterview({ setActiveView }) {
                     height: 4,
                     bgcolor:
                       item.status === "completed" ? "#22c55e"
-                      : item.status === "cancelled" ? "#ef4444"
-                      : "#2563eb",
+                        : item.status === "cancelled" ? "#ef4444"
+                          : "#2563eb",
                   }}
                 />
 
@@ -202,7 +202,7 @@ export default function ScheduledInterview({ setActiveView }) {
                   }}
                 >
                   {/* LEFT — avatar + name */}
-                  <Box sx={{ display:"flex", gap:2.5, alignItems:"center", flex:1, minWidth:200 }}>
+                  <Box sx={{ display: "flex", gap: 2.5, alignItems: "center", flex: 1, minWidth: 200 }}>
                     <Avatar
                       sx={{
                         width: 58,
@@ -223,7 +223,7 @@ export default function ScheduledInterview({ setActiveView }) {
                         {item.student_name}
                       </Typography>
 
-                      <Typography sx={{ color:"#64748b", fontSize:13.5, mt:0.4 }}>
+                      <Typography sx={{ color: "#64748b", fontSize: 13.5, mt: 0.4 }}>
                         {item.job_name}
                       </Typography>
 
@@ -243,14 +243,14 @@ export default function ScheduledInterview({ setActiveView }) {
                   </Box>
 
                   {/* RIGHT — meta */}
-                  <Box sx={{ display:"flex", flexDirection:"column", gap:1, minWidth:220 }}>
-                    <InfoRow icon={<Business      sx={{ fontSize:18 }} />} text={item.company} />
-                    <InfoRow icon={<CalendarMonth sx={{ fontSize:18 }} />} text={formatDate(item.scheduled_at)} />
-                    <InfoRow icon={<AccessTime    sx={{ fontSize:18 }} />} text={formatTime(item.scheduled_at)} />
+                  <Box sx={{ display: "flex", flexDirection: "column", gap: 1, minWidth: 220 }}>
+                    <InfoRow icon={<Business sx={{ fontSize: 18 }} />} text={item.company} />
+                    <InfoRow icon={<CalendarMonth sx={{ fontSize: 18 }} />} text={formatDate(item.scheduled_at)} />
+                    <InfoRow icon={<AccessTime sx={{ fontSize: 18 }} />} text={formatTime(item.scheduled_at)} />
                   </Box>
                 </Box>
 
-                <Divider sx={{ borderColor:"#f1f5f9" }} />
+                <Divider sx={{ borderColor: "#f1f5f9" }} />
 
                 {/* IDs + meeting link */}
                 <Box
@@ -265,24 +265,24 @@ export default function ScheduledInterview({ setActiveView }) {
                   }}
                 >
                   <Typography variant="caption" color="text.disabled" fontWeight={600}>
-                    App ID: <span style={{ color:"#94a3b8" }}>{item.app_id}</span>
+                    App ID: <span style={{ color: "#94a3b8" }}>{item.app_id}</span>
                   </Typography>
 
                   <Typography variant="caption" color="text.disabled" fontWeight={600}>
-                    Student ID: <span style={{ color:"#94a3b8" }}>{item.student_id}</span>
+                    Student ID: <span style={{ color: "#94a3b8" }}>{item.student_id}</span>
                   </Typography>
 
                   {item.meeting_link && (
                     <Typography
                       variant="caption"
-                      sx={{ color:"#2563eb", fontWeight:600, wordBreak:"break-all" }}
+                      sx={{ color: "#2563eb", fontWeight: 600, wordBreak: "break-all" }}
                     >
                       🔗 {item.meeting_link}
                     </Typography>
                   )}
                 </Box>
 
-                <Divider sx={{ borderColor:"#f1f5f9" }} />
+                <Divider sx={{ borderColor: "#f1f5f9" }} />
 
                 {/* Action buttons */}
                 <Box
@@ -299,7 +299,7 @@ export default function ScheduledInterview({ setActiveView }) {
                 >
                   <Button
                     variant="outlined"
-                    startIcon={<CalendarMonth sx={{ fontSize:17 }} />}
+                    startIcon={<CalendarMonth sx={{ fontSize: 17 }} />}
                     size="small"
                     sx={{
                       borderRadius: "10px",
@@ -308,7 +308,7 @@ export default function ScheduledInterview({ setActiveView }) {
                       fontSize: 13,
                       borderColor: "#cbd5e1",
                       color: "#475569",
-                      "&:hover": { borderColor:"#94a3b8", bgcolor:"#f1f5f9" },
+                      "&:hover": { borderColor: "#94a3b8", bgcolor: "#f1f5f9" },
                     }}
                   >
                     Reschedule
@@ -331,7 +331,7 @@ export default function ScheduledInterview({ setActiveView }) {
                   {/* ── Join Interview — always enabled ── */}
                   <Button
                     variant="contained"
-                    startIcon={<VideoCall sx={{ fontSize:17 }} />}
+                    startIcon={<VideoCall sx={{ fontSize: 17 }} />}
                     size="small"
                     onClick={() => item.meeting_link && window.open(item.meeting_link, "_blank")}
                     sx={{
@@ -341,7 +341,7 @@ export default function ScheduledInterview({ setActiveView }) {
                       fontSize: 13,
                       bgcolor: "#2563eb",
                       boxShadow: "none",
-                      "&:hover": { bgcolor:"#1d4ed8", boxShadow:"0 2px 8px rgba(37,99,235,0.25)" },
+                      "&:hover": { bgcolor: "#1d4ed8", boxShadow: "0 2px 8px rgba(37,99,235,0.25)" },
                     }}
                   >
                     Join Interview
@@ -350,7 +350,7 @@ export default function ScheduledInterview({ setActiveView }) {
                   <Button
                     variant="contained"
                     color="success"
-                    startIcon={<CheckCircle sx={{ fontSize:17 }} />}
+                    startIcon={<CheckCircle sx={{ fontSize: 17 }} />}
                     size="small"
                     sx={{
                       borderRadius: "10px",
@@ -358,7 +358,7 @@ export default function ScheduledInterview({ setActiveView }) {
                       fontWeight: 700,
                       fontSize: 13,
                       boxShadow: "none",
-                      "&:hover": { boxShadow:"0 2px 8px rgba(34,197,94,0.25)" },
+                      "&:hover": { boxShadow: "0 2px 8px rgba(34,197,94,0.25)" },
                     }}
                   >
                     Mark Complete
@@ -389,7 +389,7 @@ function StatCard({ title, value, accent }) {
         gap: 0.5,
       }}
     >
-      <Typography sx={{ fontSize:12, fontWeight:600, opacity:0.7, textTransform:"uppercase", letterSpacing:0.6 }}>
+      <Typography sx={{ fontSize: 12, fontWeight: 600, opacity: 0.7, textTransform: "uppercase", letterSpacing: 0.6 }}>
         {title}
       </Typography>
 
@@ -402,12 +402,12 @@ function StatCard({ title, value, accent }) {
 
 function InfoRow({ icon, text }) {
   return (
-    <Box sx={{ display:"flex", gap:1, alignItems:"center" }}>
-      <Box sx={{ color:"#94a3b8", display:"flex", alignItems:"center" }}>
+    <Box sx={{ display: "flex", gap: 1, alignItems: "center" }}>
+      <Box sx={{ color: "#94a3b8", display: "flex", alignItems: "center" }}>
         {icon}
       </Box>
 
-      <Typography sx={{ fontWeight:600, fontSize:13.5, color:"#334155" }}>
+      <Typography sx={{ fontWeight: 600, fontSize: 13.5, color: "#334155" }}>
         {text}
       </Typography>
     </Box>

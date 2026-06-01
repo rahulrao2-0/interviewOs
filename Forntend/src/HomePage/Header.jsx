@@ -14,8 +14,8 @@ import MenuItem from '@mui/material/MenuItem';
 import AdbIcon from '@mui/icons-material/Adb';
 import Profile from '../Student/Profile';
 import { useNavigate } from 'react-router-dom';
-import { useEffect , useState } from 'react';
-import {useAuth} from '../AuthContext';
+import { useEffect, useState } from 'react';
+import { useAuth } from '../AuthContext';
 import MailIcon from "@mui/icons-material/Mail";
 import "./Header.css";
 import { Dashboard } from '@mui/icons-material';
@@ -27,17 +27,17 @@ const settings = ['Profile', 'My Applications', 'Dashboard', 'Help', 'Logout'];
 function Header() {
   const [anchorElNav, setAnchorElNav] = React.useState(null);
   const [anchorElUser, setAnchorElUser] = React.useState(null);
-  
+
   const navigate = useNavigate();
   const { user } = useAuth();
 
   console.log("Header user 👉", user);
-  
 
-  useEffect(()=>{
+
+  useEffect(() => {
     const fetchProfile = async () => {
       try {
-        const res = await fetch("http://localhost:5000/api/profile", {
+        const res = await fetch("http://ec2-13-126-64-8.ap-south-1.compute.amazonaws.com:5000/api/profile", {
           credentials: "include",
         });
         const data = await res.json();
@@ -62,9 +62,9 @@ function Header() {
   };
 
   const handleMockInterview = () => {
-    if(user?.user.user_id){
+    if (user?.user.user_id) {
       navigate(`/interview-room/${user.user.user_id}`);
-    }else{
+    } else {
       navigate("/login");
     }
   }
@@ -72,42 +72,42 @@ function Header() {
   console.log("User in Header:", user);
 
   const handleStudentMessages = () => {
-    if(user?.user.user_id){
+    if (user?.user.user_id) {
       navigate(`/student/messages/${user.user.user_id}`);
-    }else{
+    } else {
       navigate("/login");
     }
   }
 
   const handleCloseUserMenu = (item) => {
 
-    if(item === "Profile"){
-      navigate(`/profile/${user?.user?.user_id}`); 
+    if (item === "Profile") {
+      navigate(`/profile/${user?.user?.user_id}`);
     }
-    if(item === "Logout"){
-      const logout = async ()=>{
-        const response= await fetch("http://localhost:5000/api/logout",{
-        method:"GET",
-        credentials:"include",
-      })
-      const data = await response.json();
+    if (item === "Logout") {
+      const logout = async () => {
+        const response = await fetch("http://ec2-13-126-64-8.ap-south-1.compute.amazonaws.com:5000/api/logout", {
+          method: "GET",
+          credentials: "include",
+        })
+        const data = await response.json();
         console.log("Logout response:", data);
       }
       logout();
       navigate("/login");
     }
-    if(item === "My Applications"){
+    if (item === "My Applications") {
       navigate("/my-applications");
     }
-    if(item === "Dashboard"){
-      if(user?.user?.role === "user"){
+    if (item === "Dashboard") {
+      if (user?.user?.role === "user") {
         navigate(`/profile/${user?.user?.user_id}`);
-      }else if(user?.user?.role === "interviewer"){
+      } else if (user?.user?.role === "interviewer") {
         navigate("/interviewer/dashboard");
       }
     }
-    if(item === "Help"){  
-      navigate("/help");  
+    if (item === "Help") {
+      navigate("/help");
     }
 
     setAnchorElUser(null);
@@ -118,36 +118,36 @@ function Header() {
       <Container maxWidth="xl">
         <Toolbar disableGutters>
           <Box
-           sx={{
-           display: { xs: 'none', md: 'flex' },
-          flexDirection: 'column',
-          mr: 2,
-        }}
-       >
-     <Typography
-        variant="h6"
-       sx={{
-         fontFamily: 'monospace',
-        fontWeight: 700,
-        letterSpacing: '.2rem',
-        color: 'white',
-        lineHeight: 1,
-        }}
-     >
-        
-     <i class="fa-solid fa-box"></i>InterviewOS
-     </Typography>
+            sx={{
+              display: { xs: 'none', md: 'flex' },
+              flexDirection: 'column',
+              mr: 2,
+            }}
+          >
+            <Typography
+              variant="h6"
+              sx={{
+                fontFamily: 'monospace',
+                fontWeight: 700,
+                letterSpacing: '.2rem',
+                color: 'white',
+                lineHeight: 1,
+              }}
+            >
 
-      <Typography
-      variant="caption"
-      sx={{
-      color: '#ffcdd2',
-      fontSize: '12px',
-    }}
-    >
-    Find Jobs & Internship
-    </Typography>
-</Box>
+              <i class="fa-solid fa-box"></i>InterviewOS
+            </Typography>
+
+            <Typography
+              variant="caption"
+              sx={{
+                color: '#ffcdd2',
+                fontSize: '12px',
+              }}
+            >
+              Find Jobs & Internship
+            </Typography>
+          </Box>
 
           <Box sx={{ flexGrow: 1, display: { xs: 'flex', md: 'none' } }}>
             <IconButton
@@ -183,17 +183,17 @@ function Header() {
               ))}
             </Menu>
           </Box>
-          
+
           <Typography
-          variant="h6"
-          sx={{
-         display: { xs: 'flex', md: 'none' },
-         flexGrow: 1,
-         fontWeight: 700,
-         color: 'white',
-         }}
+            variant="h6"
+            sx={{
+              display: { xs: 'flex', md: 'none' },
+              flexGrow: 1,
+              fontWeight: 700,
+              color: 'white',
+            }}
           >
-         InterviewOS
+            InterviewOS
           </Typography>
           <Box sx={{ flexGrow: 1, display: { xs: 'none', md: 'flex' } }}>
             {pages.map((page) => (
@@ -206,75 +206,75 @@ function Header() {
               </Button>
             ))}
           </Box>
-            {user?.user?.role !== "interviewer" && (
-  <Button
-    onClick={handleStudentMessages}
-    variant="contained"
-    sx={{
-      fontWeight: "bold",
-      borderRadius: "8px",
-      marginRight: "16px",
-      textTransform: "none",
-      padding: "8px 18px",
-      backgroundColor: "#1976d2",
-      "&:hover": {
-        backgroundColor: "#1565c0",
-      },
-    }}
-  >
-    <i className="fa-regular fa-message"></i> &nbsp;
-    Messages
-  </Button>
-)}
-          {user ? (<>
-          <Box sx={{ flexGrow: 0 }}>
+          {user?.user?.role !== "interviewer" && (
             <Button
-        onClick={handleMockInterview}
-        variant="contained"
-         sx={{
-        fontWeight: "bold",
-         borderRadius: "8px",
-         marginRight: "16px",
-         textTransform: "none",
-         padding: "8px 18px",
-          backgroundColor: "Red",
-          }}
-           >
-          Start Mock Interview
-       </Button>
-            <Tooltip title="Open settings">
-              <IconButton onClick={handleOpenUserMenu} sx={{ p: 0 }}>
-                <Avatar alt="Remy Sharp" src="/static/images/avatar/2.jpg" />
-              </IconButton>
-            </Tooltip>
-            <Menu
-              sx={{ mt: '45px' }}
-              id="menu-appbar"
-              anchorEl={anchorElUser}
-              anchorOrigin={{
-                vertical: 'top',
-                horizontal: 'right',
+              onClick={handleStudentMessages}
+              variant="contained"
+              sx={{
+                fontWeight: "bold",
+                borderRadius: "8px",
+                marginRight: "16px",
+                textTransform: "none",
+                padding: "8px 18px",
+                backgroundColor: "#1976d2",
+                "&:hover": {
+                  backgroundColor: "#1565c0",
+                },
               }}
-              keepMounted
-              transformOrigin={{
-                vertical: 'top',
-                horizontal: 'right',
-              }}
-              open={Boolean(anchorElUser)}
-              onClose={handleCloseUserMenu}
             >
+              <i className="fa-regular fa-message"></i> &nbsp;
+              Messages
+            </Button>
+          )}
+          {user ? (<>
+            <Box sx={{ flexGrow: 0 }}>
+              <Button
+                onClick={handleMockInterview}
+                variant="contained"
+                sx={{
+                  fontWeight: "bold",
+                  borderRadius: "8px",
+                  marginRight: "16px",
+                  textTransform: "none",
+                  padding: "8px 18px",
+                  backgroundColor: "Red",
+                }}
+              >
+                Start Mock Interview
+              </Button>
+              <Tooltip title="Open settings">
+                <IconButton onClick={handleOpenUserMenu} sx={{ p: 0 }}>
+                  <Avatar alt="Remy Sharp" src="/static/images/avatar/2.jpg" />
+                </IconButton>
+              </Tooltip>
+              <Menu
+                sx={{ mt: '45px' }}
+                id="menu-appbar"
+                anchorEl={anchorElUser}
+                anchorOrigin={{
+                  vertical: 'top',
+                  horizontal: 'right',
+                }}
+                keepMounted
+                transformOrigin={{
+                  vertical: 'top',
+                  horizontal: 'right',
+                }}
+                open={Boolean(anchorElUser)}
+                onClose={handleCloseUserMenu}
+              >
 
 
-            {settings.map((item) => (
-            <MenuItem key={item} onClick={() => { handleCloseUserMenu(item) }}>
-            <Typography textAlign="center">{item}</Typography>
-            </MenuItem>
-            ))}
-            </Menu>
-          </Box>
-          </>):(<>
-          <Button color="inherit" onClick={() => navigate("/signup")}>Signup</Button>
-          <Button color="inherit" onClick={() => navigate("/login")}>Login</Button>
+                {settings.map((item) => (
+                  <MenuItem key={item} onClick={() => { handleCloseUserMenu(item) }}>
+                    <Typography textAlign="center">{item}</Typography>
+                  </MenuItem>
+                ))}
+              </Menu>
+            </Box>
+          </>) : (<>
+            <Button color="inherit" onClick={() => navigate("/signup")}>Signup</Button>
+            <Button color="inherit" onClick={() => navigate("/login")}>Login</Button>
           </>)}
         </Toolbar>
       </Container>

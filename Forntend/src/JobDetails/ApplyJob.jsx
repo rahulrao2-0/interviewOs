@@ -39,71 +39,71 @@ export default function ApplyJob() {
   };
 
   const handleSubmit = async (e) => {
-  e.preventDefault();
+    e.preventDefault();
 
-  const profileExist = await fetch("http://localhost:5000/api/profileExist", {
-    method: "GET",
-    credentials: "include",
-  });
-
-  const profileData = await profileExist.json();
-  if (profileData.success===false) {
-    alert("Please create your profile before applying");
-    navigate("/profileSetup");
-    return;
-  }
-  if (!file) {
-    alert("Please upload your resume");
-    return;
-  }
-
-  setLoading(true);
-  setSuccess("");
-
-  try {
-    const formData = new FormData();
-
-    formData.append("name", form.name);
-    formData.append("email", form.email);
-    formData.append("phone", form.phone);
-    formData.append("resume", file);
-    formData.append("jobId", jobId);
-
-    for (let pair of formData.entries()) {
-      console.log(pair[0], pair[1]);
-    }
-    console.log("Submitting application with data:", formData);
-    const res = await fetch("http://localhost:5000/api/applyJob", {
-      method: "POST",
+    const profileExist = await fetch("http://ec2-13-126-64-8.ap-south-1.compute.amazonaws.com:5000/api/profileExist", {
+      method: "GET",
       credentials: "include",
-      body: formData,
     });
 
-    const data = await res.json();
-    console.log("Response from server:", data);
-
-    if (!res.ok) {
-      alert(data.message || "Application failed");
+    const profileData = await profileExist.json();
+    if (profileData.success === false) {
+      alert("Please create your profile before applying");
+      navigate("/profileSetup");
       return;
     }
-    if(data.message==="You cannot apply to your own job"){
-      alert(data.message);
+    if (!file) {
+      alert("Please upload your resume");
       return;
     }
-    if (data.message==="Application submitted successfully") {
-      setSuccess("Application submitted successfully!");
-      setForm({ name: "", email: "", phone: "" });
-      setFile(null);
-      setFileName("");
-    }
 
-  } catch (err) {
-    console.log(err);
-    alert("Something went wrong");
-  } finally {
-    setLoading(false);
-  }
-};
+    setLoading(true);
+    setSuccess("");
+
+    try {
+      const formData = new FormData();
+
+      formData.append("name", form.name);
+      formData.append("email", form.email);
+      formData.append("phone", form.phone);
+      formData.append("resume", file);
+      formData.append("jobId", jobId);
+
+      for (let pair of formData.entries()) {
+        console.log(pair[0], pair[1]);
+      }
+      console.log("Submitting application with data:", formData);
+      const res = await fetch("http://ec2-13-126-64-8.ap-south-1.compute.amazonaws.com:5000/api/applyJob", {
+        method: "POST",
+        credentials: "include",
+        body: formData,
+      });
+
+      const data = await res.json();
+      console.log("Response from server:", data);
+
+      if (!res.ok) {
+        alert(data.message || "Application failed");
+        return;
+      }
+      if (data.message === "You cannot apply to your own job") {
+        alert(data.message);
+        return;
+      }
+      if (data.message === "Application submitted successfully") {
+        setSuccess("Application submitted successfully!");
+        setForm({ name: "", email: "", phone: "" });
+        setFile(null);
+        setFileName("");
+      }
+
+    } catch (err) {
+      console.log(err);
+      alert("Something went wrong");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <Box sx={{ maxWidth: 600, mx: "auto", mt: 5, px: 2 }}>

@@ -4,7 +4,7 @@ import { Eye, EyeOff, LogIn } from 'lucide-react';
 import './Login.css';
 import { useNavigate } from "react-router-dom";
 
-import {useAuth} from '../AuthContext';
+import { useAuth } from '../AuthContext';
 export default function Login() {
   const navigate = useNavigate();
   const [showPassword, setShowPassword] = React.useState(false);
@@ -14,7 +14,7 @@ export default function Login() {
   });
   const [loading, setLoading] = React.useState(false);
   const [error, setError] = React.useState('');
-  const {checkAuth} = useAuth();
+  const { checkAuth } = useAuth();
 
   const handleChange = (e) => {
     setError('');
@@ -27,28 +27,28 @@ export default function Login() {
     setError('');
 
     try {
-       const response = await fetch("http://localhost:5000/api/login",{
-        method:"POST",
-        credentials:"include",
+      const response = await fetch("http://ec2-13-126-64-8.ap-south-1.compute.amazonaws.com:5000/api/login", {
+        method: "POST",
+        credentials: "include",
         headers: { "Content-Type": "application/json" },
-        body:JSON.stringify(form)
-       })
-       
-       const res = await response.json();
-       console.log("Response",res)
-       if(res.message==="User successfully Logged in"){
-          await checkAuth();
-        navigate("/profileSetup",{replace:true})
-       }
+        body: JSON.stringify(form)
+      })
+
+      const res = await response.json();
+      console.log("Response", res)
+      if (res.message === "User successfully Logged in") {
+        await checkAuth();
+        navigate("/profileSetup", { replace: true })
+      }
 
 
       console.log('Login submitted:', form);
-      setForm({username:"",password:""})
+      setForm({ username: "", password: "" })
     } catch (err) {
       setError('Invalid username or password. Please try again.');
     } finally {
       setLoading(false);
-      
+
     }
   };
 

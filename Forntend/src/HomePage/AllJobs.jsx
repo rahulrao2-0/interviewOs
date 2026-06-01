@@ -36,7 +36,7 @@ export default function AllJobs() {
     const fetchJobs = async () => {
       try {
         const res = await fetch(
-          `http://localhost:5000/api/allJobs?page=${page}&limit=5`,
+          `http://ec2-13-126-64-8.ap-south-1.compute.amazonaws.com:5000/api/allJobs?page=${page}&limit=5`,
           { credentials: "include" }
         );
 
@@ -68,7 +68,7 @@ export default function AllJobs() {
     setSelectedJob(null);
   };
 
-  const ApplyJOb = () => {  
+  const ApplyJOb = () => {
     navigate(`/job/apply/${selectedJob.job_id}`);
   }
 
@@ -181,27 +181,27 @@ export default function AllJobs() {
         {selectedJob && (
           <>
             <DialogTitle sx={{ pr: 6 }}>
-             <Box>
-            <Typography component="div" variant="h6" fontWeight="bold">
-            {selectedJob.job_name}
-           </Typography>
+              <Box>
+                <Typography component="div" variant="h6" fontWeight="bold">
+                  {selectedJob.job_name}
+                </Typography>
 
-           <Typography component="div" variant="body2" color="text.secondary">
-           {selectedJob.company}
-           </Typography>
-          </Box>
+                <Typography component="div" variant="body2" color="text.secondary">
+                  {selectedJob.company}
+                </Typography>
+              </Box>
 
-          <IconButton
-          onClick={handleCloseDialog}
-          sx={{
-          position: "absolute",
-          right: 12,
-         top: 12,
-         }}
-         >
-          <CloseIcon />
-         </IconButton>
-         </DialogTitle>
+              <IconButton
+                onClick={handleCloseDialog}
+                sx={{
+                  position: "absolute",
+                  right: 12,
+                  top: 12,
+                }}
+              >
+                <CloseIcon />
+              </IconButton>
+            </DialogTitle>
 
             <DialogContent dividers>
               <Stack spacing={2}>

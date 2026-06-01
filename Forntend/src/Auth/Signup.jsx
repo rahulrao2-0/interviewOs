@@ -6,9 +6,9 @@ import { useNavigate } from 'react-router-dom';
 
 export default function Signup() {
   const [showPassword, setShowPassword] = useState(false);
-  const [error, setError]               = useState('');
-  const [success, setSuccess]           = useState('');
-  const [loading, setLoading]           = useState(false);
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
+  const [loading, setLoading] = useState(false);
 
   const navigate = useNavigate();
 
@@ -24,62 +24,62 @@ export default function Signup() {
   };
 
   const handleSubmit = async (e) => {
-  e.preventDefault();
+    e.preventDefault();
 
-  setLoading(true);
-  setError("");
-  setSuccess("");
+    setLoading(true);
+    setError("");
+    setSuccess("");
 
-  try {
-    const response = await fetch("http://localhost:5000/api/signup", {
-      method: "POST",
-      credentials: "include",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(form),
-    });
+    try {
+      const response = await fetch("http://ec2-13-126-64-8.ap-south-1.compute.amazonaws.com:5000/api/signup", {
+        method: "POST",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(form),
+      });
 
-    const res = await response.json();
+      const res = await response.json();
 
-    console.log(res);
+      console.log(res);
 
-    // ❌ API returned error
-    if (!response.ok || res.success === false) {
-      setError(res.message || "Signup failed");
-      return;
+      // ❌ API returned error
+      if (!response.ok || res.success === false) {
+        setError(res.message || "Signup failed");
+        return;
+      }
+
+      // ✅ Success
+      setSuccess(res.message);
+
+      alert("Signup successful! Please verify your email with the OTP sent to you.");
+
+      // Store email before clearing form
+      const userEmail = form.email;
+
+      // Clear form
+      setForm({
+        username: "",
+        email: "",
+        password: "",
+      });
+
+      // Navigate to OTP page
+      navigate("/otp-verification", {
+        state: { email: userEmail },
+      });
+
+    } catch (err) {
+      console.error(err);
+
+      // ❌ Network/server error
+      setError("Cannot connect to server. Please try again.");
+
+    } finally {
+      setLoading(false);
     }
-
-    // ✅ Success
-    setSuccess(res.message);
-
-    alert("Signup successful! Please verify your email with the OTP sent to you.");
-
-    // Store email before clearing form
-    const userEmail = form.email;
-
-    // Clear form
-    setForm({
-      username: "",
-      email: "",
-      password: "",
-    });
-
-    // Navigate to OTP page
-    navigate("/otp-verification", {
-      state: { email: userEmail },
-    });
-
-  } catch (err) {
-    console.error(err);
-
-    // ❌ Network/server error
-    setError("Cannot connect to server. Please try again.");
-
-  } finally {
-    setLoading(false);
-  }
-};
+  };
 
   return (
     <div className="signup-page">
@@ -95,7 +95,7 @@ export default function Signup() {
         </div>
 
         {/* ✅ FIX 4: error/success banners with proper CSS classes */}
-        {error   && <div className="error-banner">{error}</div>}
+        {error && <div className="error-banner">{error}</div>}
         {success && <div className="success-banner">{success} <a href="/login">Log in</a></div>}
 
         {/* Form */}

@@ -153,7 +153,7 @@ export default function Applicants({ onMessageClick, handleSelectedUser }) {
   useEffect(() => {
     const fetchApplicants = async () => {
       try {
-        const res = await fetch("http://localhost:5000/api/applicants", {
+        const res = await fetch("http://ec2-13-126-64-8.ap-south-1.compute.amazonaws.com:5000/api/applicants", {
           method: "GET",
           credentials: "include",
         });
