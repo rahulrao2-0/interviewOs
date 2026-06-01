@@ -17,20 +17,20 @@ jobs:
         with:
           node-version: 22
           cache: npm
-          cache-dependency-path: Frontend/package-lock.json
+          cache-dependency-path: Forntend/package-lock.json
 
       - name: Install Dependencies
-        working-directory: Frontend
+        working-directory: Forntend
         run: npm install
 
       - name: Build Frontend
-        working-directory: Frontend
+        working-directory: Forntend
         run: npm run build
 
       - name: Deploy Build Files
         run: |
           sudo rm -rf /var/www/html/*
-          sudo cp -r Frontend/dist/* /var/www/html/
+          sudo cp -r Forntend/dist/* /var/www/html/
 
       - name: Reload Nginx
         run: sudo systemctl reload nginx
