@@ -35,8 +35,8 @@ jobs:
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.HOST }}
-          username: ${{ secrets.USERNAME }}
-          key: ${{ secrets.SSH_KEY }}
+          username: ${{ secrets.EC2_HOST }}
+          key: ${{ secrets.EC2_KEY }}
           script: |
             rm -rf /home/ubuntu/frontend/Forntend/dist
 
@@ -45,8 +45,8 @@ jobs:
         uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.HOST }}
-          username: ${{ secrets.USERNAME }}
-          key: ${{ secrets.SSH_KEY }}
+          username: ${{ secrets.EC2_HOST }}
+          key: ${{ secrets.EC2_KEY }}
           source: "Forntend/dist/*"
           target: "/home/ubuntu/frontend/Forntend/dist"
           overwrite: true
