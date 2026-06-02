@@ -1,6 +1,6 @@
 import { Worker } from "bullmq";
 import redis from "../Redis.js";
-import sendEmail from "../utils/sendEmail.js";
+import sendEmail from "../utils/SendEmail.js";
 
 const emailWorker = new Worker(
   "SkillMatchingEmailQueue",
