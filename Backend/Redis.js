@@ -5,7 +5,7 @@ dotenv.config({ path: "./.env" });
 const redis = new Redis(process.env.REDIS_URL,{
   maxRetriesPerRequest: null,
 });
-// console.log(process.env.REDIS_URL);
+console.log("Redis URL:", process.env.REDIS_URL);
 
 redis.on("connect", () => {
   console.log("Redis Connected");
