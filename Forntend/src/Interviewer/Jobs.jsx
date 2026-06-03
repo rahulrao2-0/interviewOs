@@ -57,28 +57,39 @@ export default function Jobs() {
   /* ─────────────────────────────
      Delete Job
   ───────────────────────────── */
-  const handleDelete = async (job_id) => {
-    if (!window.confirm("Are you sure you want to delete this job?")) return;
+    const handleDelete = async (job_id) => {
+  if (!window.confirm("Are you sure you want to delete this job?")) {
+    return;
+  }
 
-    try {
-      const res = await fetch(
-        `http://ec2-13-126-64-8.ap-south-1.compute.amazonaws.com:5000/api/delete-job/${job_id}`,
-        {
-          method: "DELETE",
-          credentials: "include",
-        }
-      );
-      const data = await res.json();
-
-      if (data.success) {
-        setJobs((prev) => prev.filter((j) => j.job_id !== job_id));
-      } else {
-        alert(data.message || "Failed to delete job");
+  try {
+    const res = await fetch(
+      `http://ec2-13-126-64-8.ap-south-1.compute.amazonaws.com:5000/api/delete-job/${job_id}`,
+      {
+        method: "DELETE",
+        credentials: "include",
       }
-    } catch (err) {
-      alert("Something went wrong while deleting");
+    );
+
+    const data = await res.json();
+
+    if (!res.ok) {
+      throw new Error(data.message || "Failed to delete job");
     }
-  };
+
+    // Remove deleted job from UI
+    setJobs((prev) => prev.filter((job) => job.job_id !== job_id));
+
+    alert(data.message || "Job deleted successfully");
+
+  } catch (err) {
+    console.error("Delete Job Error:", err);
+
+    alert(
+      err.message || "Something went wrong while deleting the job"
+    );
+  }
+};
 
   /* ─────────────────────────────
      Salary Display Helper

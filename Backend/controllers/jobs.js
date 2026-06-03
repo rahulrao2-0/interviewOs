@@ -516,3 +516,130 @@ export const myJobs = async (req, res, next) => {
     next(new expressError("Failed to fetch jobs", 500));
   }
 };
+
+export const deleteJob = async (req, res, next) => {
+  try {
+    const { job_id } = req.params;
+
+    if (!job_id) {
+      return next(new ExpressError(400, "Job ID is required"));
+    }
+
+    const [result] = await db.execute(
+      "DELETE FROM jobs WHERE job_id = ?",
+      [job_id]
+    );
+
+    if (result.affectedRows === 0) {
+      return next(new ExpressError(404, "Job not found"));
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: "Job deleted successfully",
+    });
+
+  } catch (err) {
+    return next(
+      new ExpressError(
+        500,
+        `Failed to delete job: ${err.message}`
+      )
+    );
+  }
+};
+
+export const editJob = async (req, res, next) => {
+  try {
+    const { job_id } = req.params;
+
+    const {
+      company,
+      job_name,
+      experience,
+      job_type,
+      description,
+      role,
+      min_salary,
+      max_salary,
+      required_skills,
+    } = req.body;
+
+    if (!job_id) {
+      return next(new ExpressError(400, "Job ID is required"));
+    }
+
+    const [job] = await db.execute(
+      "SELECT * FROM jobs WHERE job_id = ?",
+      [job_id]
+    );
+
+    if (job.length === 0) {
+      return next(new ExpressError(404, "Job not found"));
+    }
+
+    // Update job details
+    const [result] = await db.execute(
+      `
+      UPDATE jobs
+      SET
+        company = ?,
+        job_name = ?,
+        experience = ?,
+        job_type = ?,
+        description = ?,
+        role = ?,
+        min_salary = ?,
+        max_salary = ?
+      WHERE job_id = ?
+      `,
+      [
+        company,
+        job_name,
+        experience,
+        job_type,
+        description,
+        role,
+        min_salary,
+        max_salary,
+        job_id,
+      ]
+    );
+
+    if (result.affectedRows === 0) {
+      return next(new ExpressError(400, "Failed to update job"));
+    }
+
+    // Remove old skills
+    await db.execute(
+      "DELETE FROM job_skills WHERE job_id = ?",
+      [job_id]
+    );
+
+    // Insert updated skills
+    if (Array.isArray(required_skills) && required_skills.length > 0) {
+      const values = required_skills.map((skill) => [
+        job_id,
+        skill.trim(),
+      ]);
+
+      await db.query(
+        "INSERT INTO job_skills (job_id, skill_name) VALUES ?",
+        [values]
+      );
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: "Job updated successfully",
+    });
+
+  } catch (err) {
+    return next(
+      new ExpressError(
+        500,
+        `Failed to update job: ${err.message}`
+      )
+    );
+  }
+};
