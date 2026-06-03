@@ -19,6 +19,7 @@ import Lobby from './Interviewer/lobbyPage.jsx'
 import VideoCall from './Interviewer/VideoCall.jsx'
 import ApplicantFullDetail from './Interviewer/ApplicantFullDetail.jsx'
 import OTPVerification from './Auth/OTPVerification.jsx'
+import EditJob from './Interviewer/JobEdit.jsx';
 
 function App() {
   const [count, setCount] = useState(0)
@@ -41,7 +42,7 @@ function App() {
       <Route path="/call/:roomId" element={<VideoCall />} />
       <Route path="/applicant/:applicantId" element={<ApplicantFullDetail/>}/>
       <Route path="/otp-verification" element={<OTPVerification/>}/>
-
+      <Route path="/interviewer/edit-job/:job_id" element={<EditJob/>}/>
     </Routes>
 )
 }
