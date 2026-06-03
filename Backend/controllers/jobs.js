@@ -655,6 +655,8 @@ export const filterJobs = async (req, res, next) => {
       limit = 5,
     } = req.query;
 
+    console.log("filterJobs query:", req.query);  // ← log incoming params
+
     const params = [];
     const conditions = [];
 
@@ -694,7 +696,7 @@ export const filterJobs = async (req, res, next) => {
         "3+ Years": { min: 3, max: 4 },
         "5+ Years": { min: 5, max: 99 },
       };
-      const range = expMap[experience];
+      const range = expMap[experience.trim()];  // ← trim whitespace
       if (range) {
         conditions.push(`j.experience BETWEEN ? AND ?`);
         params.push(range.min, range.max);
@@ -710,7 +712,7 @@ export const filterJobs = async (req, res, next) => {
         "10–20 LPA": { min: 1000000, max: 2000000   },
         "20+ LPA":   { min: 2000000, max: 999999999 },
       };
-      const range = salaryMap[salary];
+      const range = salaryMap[salary.trim()];  // ← trim whitespace
       if (range) {
         conditions.push(`
           (
@@ -736,10 +738,13 @@ export const filterJobs = async (req, res, next) => {
     const limitNum = Math.min(50, Math.max(1, parseInt(limit)));
     const offset   = (pageNum - 1) * limitNum;
 
+    // ← snapshot params BEFORE count query so main query gets clean copy
+    const filterParamsCopy = [...params];
+
     /* ── Count ── */
     const [countResult] = await db.execute(
       `SELECT COUNT(DISTINCT j.job_id) AS total FROM jobs j ${whereClause}`,
-      params
+      filterParamsCopy
     );
     const total      = countResult[0].total;
     const totalPages = Math.ceil(total / limitNum);
@@ -769,13 +774,15 @@ export const filterJobs = async (req, res, next) => {
       ORDER BY j.created_at DESC
       LIMIT ? OFFSET ?
       `,
-      [...params, limitNum, offset]  // ← params reused safely here
+      [...params, limitNum, offset]
     );
 
     const shaped = jobs.map((job) => ({
       ...job,
       skills: job.skills ? job.skills.split(", ") : [],
     }));
+
+    console.log(`filterJobs: found ${shaped.length} jobs`);  // ← log result
 
     return res.status(200).json({
       success: true,
@@ -786,6 +793,7 @@ export const filterJobs = async (req, res, next) => {
     });
 
   } catch (err) {
+    console.log("filterJobs ERROR:", err.message);  // ← log error
     return next(new ExpressError(500, `Failed to fetch jobs: ${err.message}`));
   }
 };
