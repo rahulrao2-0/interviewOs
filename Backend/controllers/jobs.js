@@ -655,10 +655,10 @@ export const filterJobs = async (req, res, next) => {
       limit = 5,
     } = req.query;
 
-    console.log("filterJobs query:", req.query);  // ← log incoming params
+    console.log("filterJobs query:", req.query);
 
-    const params = [];
     const conditions = [];
+    const buildParams = [];  // ← build once, spread into both queries
 
     /* ── Skills ── */
     if (skills) {
@@ -673,7 +673,7 @@ export const filterJobs = async (req, res, next) => {
             HAVING COUNT(DISTINCT LOWER(skill_name)) = ?
           )
         `);
-        params.push(...skillList.map((s) => s.toLowerCase()), skillList.length);
+        buildParams.push(...skillList.map((s) => s.toLowerCase()), skillList.length);
       }
     }
 
@@ -683,7 +683,7 @@ export const filterJobs = async (req, res, next) => {
       if (typeList.length > 0) {
         const placeholders = typeList.map(() => "?").join(", ");
         conditions.push(`j.job_type IN (${placeholders})`);
-        params.push(...typeList);
+        buildParams.push(...typeList);
       }
     }
 
@@ -696,10 +696,10 @@ export const filterJobs = async (req, res, next) => {
         "3+ Years": { min: 3, max: 4 },
         "5+ Years": { min: 5, max: 99 },
       };
-      const range = expMap[experience.trim()];  // ← trim whitespace
+      const range = expMap[experience.trim()];
       if (range) {
         conditions.push(`j.experience BETWEEN ? AND ?`);
-        params.push(range.min, range.max);
+        buildParams.push(range.min, range.max);
       }
     }
 
@@ -712,7 +712,7 @@ export const filterJobs = async (req, res, next) => {
         "10–20 LPA": { min: 1000000, max: 2000000   },
         "20+ LPA":   { min: 2000000, max: 999999999 },
       };
-      const range = salaryMap[salary.trim()];  // ← trim whitespace
+      const range = salaryMap[salary.trim()];
       if (range) {
         conditions.push(`
           (
@@ -726,7 +726,7 @@ export const filterJobs = async (req, res, next) => {
               AND j.max_salary >= ?)
           )
         `);
-        params.push(range.max, range.min, range.max, range.min);
+        buildParams.push(range.max, range.min, range.max, range.min);
       }
     }
 
@@ -738,18 +738,18 @@ export const filterJobs = async (req, res, next) => {
     const limitNum = Math.min(50, Math.max(1, parseInt(limit)));
     const offset   = (pageNum - 1) * limitNum;
 
-    // ← snapshot params BEFORE count query so main query gets clean copy
-    const filterParamsCopy = [...params];
+    console.log("whereClause:", whereClause);
+    console.log("buildParams:", buildParams);
 
-    /* ── Count ── */
+    /* ── Count — fresh spread so original untouched ── */
     const [countResult] = await db.execute(
       `SELECT COUNT(DISTINCT j.job_id) AS total FROM jobs j ${whereClause}`,
-      filterParamsCopy
+      [...buildParams]   // ← fresh copy
     );
     const total      = countResult[0].total;
     const totalPages = Math.ceil(total / limitNum);
 
-    /* ── Main Query ── */
+    /* ── Main Query — fresh spread + pagination params ── */
     const [jobs] = await db.execute(
       `
       SELECT
@@ -774,7 +774,7 @@ export const filterJobs = async (req, res, next) => {
       ORDER BY j.created_at DESC
       LIMIT ? OFFSET ?
       `,
-      [...params, limitNum, offset]
+      [...buildParams, limitNum, offset]   // ← fresh copy + pagination
     );
 
     const shaped = jobs.map((job) => ({
@@ -782,7 +782,7 @@ export const filterJobs = async (req, res, next) => {
       skills: job.skills ? job.skills.split(", ") : [],
     }));
 
-    console.log(`filterJobs: found ${shaped.length} jobs`);  // ← log result
+    console.log(`filterJobs: found ${shaped.length} jobs`);
 
     return res.status(200).json({
       success: true,
@@ -793,7 +793,7 @@ export const filterJobs = async (req, res, next) => {
     });
 
   } catch (err) {
-    console.log("filterJobs ERROR:", err.message);  // ← log error
+    console.log("filterJobs ERROR:", err.message);
     return next(new ExpressError(500, `Failed to fetch jobs: ${err.message}`));
   }
 };
