@@ -20,25 +20,40 @@ import { useEffect, useState } from "react";
 import Pagination from "./Pagination.jsx";
 import { useNavigate } from "react-router-dom";
 
-export default function AllJobs() {
+const BASE = "http://ec2-13-126-64-8.ap-south-1.compute.amazonaws.com:5000";
+
+export default function AllJobs({ filterParams = {} }) {  // ← accept filterParams
   const navigate = useNavigate();
 
-  const [jobs, setJobs] = useState([]);
-  const [error, setError] = useState("");
+  const [jobs, setJobs]             = useState([]);
+  const [error, setError]           = useState("");
   const [totalPages, setTotalPages] = useState(1);
-  const [page, setPage] = useState(1);
-
-  // ✅ Dialog states
+  const [page, setPage]             = useState(1);
   const [openDialog, setOpenDialog] = useState(false);
   const [selectedJob, setSelectedJob] = useState(null);
+
+  // ← reset to page 1 when filters change
+  useEffect(() => {
+    setPage(1);
+  }, [filterParams]);
 
   useEffect(() => {
     const fetchJobs = async () => {
       try {
-        const res = await fetch(
-          `http://ec2-13-126-64-8.ap-south-1.compute.amazonaws.com:5000/api/allJobs?page=${page}&limit=5`,
-          { credentials: "include" }
-        );
+        const hasFilters = Object.keys(filterParams).length > 0;
+
+        // ← pick endpoint based on whether filters are active
+        const endpoint = hasFilters ? "allJobs/filter" : "allJobs";
+
+        const query = new URLSearchParams({
+          page,
+          limit: 5,
+          ...(hasFilters ? filterParams : {}),
+        }).toString();
+
+        const res = await fetch(`${BASE}/api/${endpoint}?${query}`, {
+          credentials: "include",
+        });
 
         const data = await res.json();
 
@@ -54,128 +69,108 @@ export default function AllJobs() {
     };
 
     fetchJobs();
-  }, [page]);
+  }, [page, filterParams]);  // ← re-fetch on page or filter change
 
-  // ✅ Open dialog
-  const handleOpenDialog = (job) => {
-    setSelectedJob(job);
-    setOpenDialog(true);
-  };
-
-  // ✅ Close dialog
-  const handleCloseDialog = () => {
-    setOpenDialog(false);
-    setSelectedJob(null);
-  };
-
-  const ApplyJOb = () => {
-    navigate(`/job/apply/${selectedJob.job_id}`);
-  }
+  const handleOpenDialog  = (job) => { setSelectedJob(job); setOpenDialog(true);  };
+  const handleCloseDialog = ()    => { setSelectedJob(null); setOpenDialog(false); };
+  const ApplyJOb          = ()    => { navigate(`/job/apply/${selectedJob.job_id}`); };
 
   if (error) return <Typography color="error">{error}</Typography>;
 
   return (
     <>
-      <Box
-        sx={{
-          flexWrap: "wrap",
-          width: "100%",
-          ml: 2,
-          mb: 2,
-          gap: 2,
-        }}
-      >
-        {jobs.map((job) => (
-          <Card
-            key={job.job_id}
-            sx={{
-              flex: "1 1 350px",
-              borderRadius: 3,
-              boxShadow: 3,
-              mb: 2,
-              borderLeft: "5px solid #d32f2f",
-            }}
-          >
-            <CardContent>
-              <Box
-                sx={{
-                  display: "flex",
-                  flexDirection: { xs: "column", md: "row" },
-                  justifyContent: "space-between",
-                  gap: 2,
-                }}
-              >
-                {/* LEFT */}
-                <Box sx={{ display: "flex", gap: 2 }}>
-                  <Avatar sx={{ bgcolor: "#e3f2fd", color: "#d32f2f" }}>
-                    {job.job_name?.[0]}
-                  </Avatar>
-
-                  <Box>
-                    <Typography variant="h6" fontWeight="bold">
-                      {job.job_name}
-                    </Typography>
-
-                    <Typography variant="body2" color="text.secondary">
-                      {job.company}
-                    </Typography>
-
-                    <Box sx={{ mt: 1, display: "flex", gap: 1 }}>
-                      <Chip label={job.job_type} size="small" />
-                    </Box>
-
-                    <Typography variant="body2" sx={{ mt: 1 }}>
-                      {job.experience} Yrs Exp • {job.job_type}
-                    </Typography>
-                  </Box>
-                </Box>
-
-                {/* RIGHT */}
+      <Box sx={{ flexWrap: "wrap", width: "100%", ml: 2, mb: 2, gap: 2 }}>
+        {jobs.length === 0 ? (
+          <Typography sx={{ mt: 4, color: "#6B7280" }}>
+            No jobs found for the selected filters.
+          </Typography>
+        ) : (
+          jobs.map((job) => (
+            <Card
+              key={job.job_id}
+              sx={{
+                flex: "1 1 350px",
+                borderRadius: 3,
+                boxShadow: 3,
+                mb: 2,
+                borderLeft: "5px solid #d32f2f",
+              }}
+            >
+              <CardContent>
                 <Box
                   sx={{
-                    textAlign: { xs: "left", md: "right" },
-                    width: { xs: "100%", md: "auto" },
+                    display: "flex",
+                    flexDirection: { xs: "column", md: "row" },
+                    justifyContent: "space-between",
+                    gap: 2,
                   }}
                 >
-                  <Typography color="error" fontWeight="bold">
-                    ₹{job.min_salary} – ₹{job.max_salary}
-                  </Typography>
+                  {/* LEFT */}
+                  <Box sx={{ display: "flex", gap: 2 }}>
+                    <Avatar sx={{ bgcolor: "#e3f2fd", color: "#d32f2f" }}>
+                      {job.job_name?.[0]}
+                    </Avatar>
 
-                  <Button
-                    variant="contained"
-                    fullWidth={{ xs: true, md: false }}
-                    onClick={() => handleOpenDialog(job)}
+                    <Box>
+                      <Typography variant="h6" fontWeight="bold">
+                        {job.job_name}
+                      </Typography>
+
+                      <Typography variant="body2" color="text.secondary">
+                        {job.company}
+                      </Typography>
+
+                      <Box sx={{ mt: 1, display: "flex", gap: 1 }}>
+                        <Chip label={job.job_type} size="small" />
+                      </Box>
+
+                      <Typography variant="body2" sx={{ mt: 1 }}>
+                        {job.experience} Yrs Exp • {job.job_type}
+                      </Typography>
+                    </Box>
+                  </Box>
+
+                  {/* RIGHT */}
+                  <Box
                     sx={{
-                      mt: 2,
-                      backgroundColor: "#d32f2f",
-                      "&:hover": {
-                        backgroundColor: "#b71c1c",
-                      },
+                      textAlign: { xs: "left", md: "right" },
+                      width: { xs: "100%", md: "auto" },
                     }}
                   >
-                    Apply Now
-                  </Button>
+                    <Typography color="error" fontWeight="bold">
+                      ₹{job.min_salary} – ₹{job.max_salary}
+                    </Typography>
+
+                    <Button
+                      variant="contained"
+                      fullWidth={{ xs: true, md: false }}
+                      onClick={() => handleOpenDialog(job)}
+                      sx={{
+                        mt: 2,
+                        backgroundColor: "#d32f2f",
+                        "&:hover": { backgroundColor: "#b71c1c" },
+                      }}
+                    >
+                      Apply Now
+                    </Button>
+                  </Box>
                 </Box>
-              </Box>
-            </CardContent>
-          </Card>
-        ))}
+              </CardContent>
+            </Card>
+          ))
+        )}
 
         <Pagination page={page} totalPages={totalPages} setPage={setPage} />
       </Box>
 
-      {/* ✅ JOB DETAILS POPUP */}
+      {/* JOB DETAILS POPUP */}
       <Dialog
         open={openDialog}
         onClose={handleCloseDialog}
         maxWidth="sm"
         fullWidth
         PaperProps={{
-          sx: {
-            borderRadius: 4,
-            width: "500px",
-            maxWidth: "95%",
-          },
+          sx: { borderRadius: 4, width: "500px", maxWidth: "95%" },
         }}
       >
         {selectedJob && (
@@ -185,7 +180,6 @@ export default function AllJobs() {
                 <Typography component="div" variant="h6" fontWeight="bold">
                   {selectedJob.job_name}
                 </Typography>
-
                 <Typography component="div" variant="body2" color="text.secondary">
                   {selectedJob.company}
                 </Typography>
@@ -193,11 +187,7 @@ export default function AllJobs() {
 
               <IconButton
                 onClick={handleCloseDialog}
-                sx={{
-                  position: "absolute",
-                  right: 12,
-                  top: 12,
-                }}
+                sx={{ position: "absolute", right: 12, top: 12 }}
               >
                 <CloseIcon />
               </IconButton>
@@ -242,7 +232,6 @@ export default function AllJobs() {
 
                 <Box>
                   <Typography fontWeight="bold">Skills Required</Typography>
-
                   <Box sx={{ mt: 1, display: "flex", gap: 1, flexWrap: "wrap" }}>
                     {selectedJob.skills?.length > 0 ? (
                       selectedJob.skills.map((skill, index) => (
@@ -262,15 +251,12 @@ export default function AllJobs() {
               <Button onClick={handleCloseDialog} color="inherit">
                 Cancel
               </Button>
-
               <Button
                 variant="contained"
                 onClick={ApplyJOb}
                 sx={{
                   backgroundColor: "#d32f2f",
-                  "&:hover": {
-                    backgroundColor: "#b71c1c",
-                  },
+                  "&:hover": { backgroundColor: "#b71c1c" },
                 }}
               >
                 Confirm Apply

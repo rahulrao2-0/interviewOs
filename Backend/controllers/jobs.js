@@ -643,3 +643,190 @@ export const editJob = async (req, res, next) => {
     );
   }
 };
+
+export const filterJobs = async (req, res, next) => {
+  try {
+    const {
+      skills,
+      job_type,
+      experience,
+      salary,
+      page = 1,
+      limit = 10,
+    } = req.query;
+
+    const params = [];
+    const conditions = [];
+
+    /* ─────────────────────────────
+       1. Skills Filter
+       Jobs that have ALL requested skills (adjustable to ANY below)
+    ───────────────────────────── */
+    if (skills) {
+      const skillList = skills
+        .split(",")
+        .map((s) => s.trim())
+        .filter(Boolean);
+
+      if (skillList.length > 0) {
+        // HAVING COUNT = skillList.length  →  job must match ALL skills
+        // Change to `> 0` if you want ANY skill match
+        const placeholders = skillList.map(() => "?").join(", ");
+        conditions.push(`
+          j.job_id IN (
+            SELECT job_id
+            FROM job_skills
+            WHERE LOWER(skill_name) IN (${placeholders})
+            GROUP BY job_id
+            HAVING COUNT(DISTINCT LOWER(skill_name)) = ?
+          )
+        `);
+        params.push(...skillList.map((s) => s.toLowerCase()), skillList.length);
+      }
+    }
+
+    /* ─────────────────────────────
+       2. Job Type Filter  (multi-select)
+    ───────────────────────────── */
+    if (job_type) {
+      const typeList = job_type
+        .split(",")
+        .map((t) => t.trim())
+        .filter(Boolean);
+
+      if (typeList.length > 0) {
+        const placeholders = typeList.map(() => "?").join(", ");
+        conditions.push(`j.job_type IN (${placeholders})`);
+        params.push(...typeList);
+      }
+    }
+
+    /* ─────────────────────────────
+       3. Experience Filter
+       Maps UI labels → numeric ranges
+    ───────────────────────────── */
+    if (experience) {
+      const expMap = {
+        Fresher:   { min: 0, max: 0 },
+        "1 Year":  { min: 1, max: 1 },
+        "2 Years": { min: 2, max: 2 },
+        "3+ Years":{ min: 3, max: 4 },
+        "5+ Years":{ min: 5, max: 99 },
+      };
+
+      const range = expMap[experience];
+      if (range) {
+        conditions.push(`j.experience BETWEEN ? AND ?`);
+        params.push(range.min, range.max);
+      }
+    }
+
+    /* ─────────────────────────────
+       4. Salary Filter
+       Maps LPA labels → monthly rupees (LPA * 100000 / 12)
+       or just keep in LPA for comparison if salaries are stored in LPA
+    ───────────────────────────── */
+    if (salary) {
+      const salaryMap = {
+        "0–3 LPA":   { min: 0,       max: 300000  },
+        "3–6 LPA":   { min: 300000,  max: 600000  },
+        "6–10 LPA":  { min: 600000,  max: 1000000 },
+        "10–20 LPA": { min: 1000000, max: 2000000 },
+        "20+ LPA":   { min: 2000000, max: 999999999 },
+      };
+
+      const range = salaryMap[salary];
+      if (range) {
+        // A job matches if its salary band overlaps the filter band
+        conditions.push(`
+          (
+            (j.min_salary IS NOT NULL AND j.max_salary IS NOT NULL
+              AND j.min_salary <= ? AND j.max_salary >= ?)
+            OR
+            (j.min_salary IS NOT NULL AND j.max_salary IS NULL
+              AND j.min_salary <= ?)
+            OR
+            (j.max_salary IS NOT NULL AND j.min_salary IS NULL
+              AND j.max_salary >= ?)
+          )
+        `);
+        params.push(range.max, range.min, range.max, range.min);
+      }
+    }
+
+    /* ─────────────────────────────
+       5. Build WHERE Clause
+    ───────────────────────────── */
+    const whereClause =
+      conditions.length > 0 ? `WHERE ${conditions.join(" AND ")}` : "";
+
+    /* ─────────────────────────────
+       6. Pagination
+    ───────────────────────────── */
+    const pageNum  = Math.max(1, parseInt(page));
+    const limitNum = Math.min(50, Math.max(1, parseInt(limit)));
+    const offset   = (pageNum - 1) * limitNum;
+
+    /* ─────────────────────────────
+       7. Count Query (for pagination meta)
+    ───────────────────────────── */
+    const countSQL = `
+      SELECT COUNT(DISTINCT j.job_id) AS total
+      FROM jobs j
+      ${whereClause}
+    `;
+    const [countResult] = await db.execute(countSQL, params);
+    const total = countResult[0].total;
+
+    /* ─────────────────────────────
+       8. Main Query — fetch jobs + aggregate skills
+    ───────────────────────────── */
+    const jobsSQL = `
+      SELECT
+        j.job_id,
+        j.company,
+        j.job_name,
+        j.experience,
+        j.job_type,
+        j.description,
+        j.role,
+        j.min_salary,
+        j.max_salary,
+        j.created_at,
+        GROUP_CONCAT(DISTINCT js.skill_name ORDER BY js.skill_name SEPARATOR ', ') AS required_skills
+      FROM jobs j
+      LEFT JOIN job_skills js ON js.job_id = j.job_id
+      ${whereClause}
+      GROUP BY
+        j.job_id, j.company, j.job_name, j.experience,
+        j.job_type, j.description, j.role,
+        j.min_salary, j.max_salary, j.created_at
+      ORDER BY j.created_at DESC
+      LIMIT ? OFFSET ?
+    `;
+
+    const [jobs] = await db.execute(jobsSQL, [...params, limitNum, offset]);
+
+    /* ─────────────────────────────
+       9. Shape Response
+    ───────────────────────────── */
+    const shaped = jobs.map((job) => ({
+      ...job,
+      required_skills: job.required_skills
+        ? job.required_skills.split(", ")
+        : [],
+    }));
+
+    return res.status(200).json({
+      success: true,
+      total,
+      page:  pageNum,
+      limit: limitNum,
+      pages: Math.ceil(total / limitNum),
+      jobs:  shaped,
+    });
+
+  } catch (err) {
+    return next(new ExpressError(500, `Failed to fetch jobs: ${err.message}`));
+  }
+};
