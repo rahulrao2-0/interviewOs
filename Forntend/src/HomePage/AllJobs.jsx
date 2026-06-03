@@ -36,36 +36,39 @@ export default function AllJobs({ filterParams = {} }) {
     setPage(1);
   }, [filterParams]);
 
-  useEffect(() => {
-    const fetchJobs = async () => {
-      try {
-        const hasFilters = Object.keys(filterParams).length > 0;
-        const endpoint   = hasFilters ? "allJobs/filter" : "allJobs";
+ useEffect(() => {
+  const fetchJobs = async () => {
+    try {
+      const hasFilters = Object.keys(filterParams).length > 0;
+      const endpoint   = hasFilters ? "allJobs/filter" : "allJobs";
 
-        const query = new URLSearchParams({
-          page,
-          limit: 5,
-          ...(hasFilters ? filterParams : {}),
-        }).toString();
+      const query = new URLSearchParams({
+        page,
+        limit: 5,
+        ...(hasFilters ? filterParams : {}),
+      }).toString();
 
-        const res  = await fetch(`${BASE}/api/${endpoint}?${query}`, {
-          credentials: "include",
-        });
-        const data = await res.json();
+      const res  = await fetch(`${BASE}/api/${endpoint}?${query}`, {
+        credentials: "include",
+      });
 
-        if (data.success) {
-          setJobs(data.jobs);
-          setTotalPages(data.totalPages);
-        } else {
-          setError(data.message);
-        }
-      } catch (err) {
-        setError("Something went wrong");
+      const data = await res.json();
+
+      if (data.success) {
+        setJobs(data.jobs ?? []);           // ← never undefined
+        setTotalPages(data.totalPages ?? 1);
+      } else {
+        setError(data.message || "Failed to fetch jobs");
+        setJobs([]);                        // ← clear jobs on error
       }
-    };
+    } catch (err) {
+      setError("Something went wrong");
+      setJobs([]);                          // ← clear jobs on network error
+    }
+  };
 
-    fetchJobs();
-  }, [page, filterParams]);
+  fetchJobs();
+}, [page, filterParams]);
 
   const handleOpenDialog  = (job) => { setSelectedJob(job); setOpenDialog(true);  };
   const handleCloseDialog = ()    => { setSelectedJob(null); setOpenDialog(false); };
