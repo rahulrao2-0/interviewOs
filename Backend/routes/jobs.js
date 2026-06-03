@@ -13,5 +13,5 @@ router.post("/postJob",authMiddleware,postJob)
 router.get("/my-Jobs",authMiddleware,myJobs)
 router.delete("/delete-job/:job_id",authMiddleware,deleteJob)
 router.put("/edit-job/:job_id", authMiddleware, editJob);
-router.get("/allJobs/filter", filterJobs)
+router.get("/allJobs/filter", authMiddleware, filterJobs)
 export default router;

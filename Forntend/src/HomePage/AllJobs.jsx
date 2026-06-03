@@ -22,17 +22,16 @@ import { useNavigate } from "react-router-dom";
 
 const BASE = "http://ec2-13-126-64-8.ap-south-1.compute.amazonaws.com:5000";
 
-export default function AllJobs({ filterParams = {} }) {  // ← accept filterParams
+export default function AllJobs({ filterParams = {} }) {
   const navigate = useNavigate();
 
-  const [jobs, setJobs]             = useState([]);
-  const [error, setError]           = useState("");
-  const [totalPages, setTotalPages] = useState(1);
-  const [page, setPage]             = useState(1);
-  const [openDialog, setOpenDialog] = useState(false);
+  const [jobs, setJobs]               = useState([]);
+  const [error, setError]             = useState("");
+  const [totalPages, setTotalPages]   = useState(1);
+  const [page, setPage]               = useState(1);
+  const [openDialog, setOpenDialog]   = useState(false);
   const [selectedJob, setSelectedJob] = useState(null);
 
-  // ← reset to page 1 when filters change
   useEffect(() => {
     setPage(1);
   }, [filterParams]);
@@ -41,9 +40,7 @@ export default function AllJobs({ filterParams = {} }) {  // ← accept filterPa
     const fetchJobs = async () => {
       try {
         const hasFilters = Object.keys(filterParams).length > 0;
-
-        // ← pick endpoint based on whether filters are active
-        const endpoint = hasFilters ? "allJobs/filter" : "allJobs";
+        const endpoint   = hasFilters ? "allJobs/filter" : "allJobs";
 
         const query = new URLSearchParams({
           page,
@@ -51,10 +48,9 @@ export default function AllJobs({ filterParams = {} }) {  // ← accept filterPa
           ...(hasFilters ? filterParams : {}),
         }).toString();
 
-        const res = await fetch(`${BASE}/api/${endpoint}?${query}`, {
+        const res  = await fetch(`${BASE}/api/${endpoint}?${query}`, {
           credentials: "include",
         });
-
         const data = await res.json();
 
         if (data.success) {
@@ -69,11 +65,18 @@ export default function AllJobs({ filterParams = {} }) {  // ← accept filterPa
     };
 
     fetchJobs();
-  }, [page, filterParams]);  // ← re-fetch on page or filter change
+  }, [page, filterParams]);
 
   const handleOpenDialog  = (job) => { setSelectedJob(job); setOpenDialog(true);  };
   const handleCloseDialog = ()    => { setSelectedJob(null); setOpenDialog(false); };
   const ApplyJOb          = ()    => { navigate(`/job/apply/${selectedJob.job_id}`); };
+
+  // ← normalize skills to always be an array
+  const getSkills = (skills) => {
+    if (Array.isArray(skills))                    return skills;
+    if (typeof skills === "string" && skills)     return skills.split(", ");
+    return [];
+  };
 
   if (error) return <Typography color="error">{error}</Typography>;
 
@@ -127,6 +130,13 @@ export default function AllJobs({ filterParams = {} }) {  // ← accept filterPa
                       <Typography variant="body2" sx={{ mt: 1 }}>
                         {job.experience} Yrs Exp • {job.job_type}
                       </Typography>
+
+                      {/* ← show skills on card too */}
+                      <Box sx={{ mt: 1, display: "flex", gap: 0.5, flexWrap: "wrap" }}>
+                        {getSkills(job.skills).slice(0, 3).map((skill, i) => (
+                          <Chip key={i} label={skill} size="small" variant="outlined" />
+                        ))}
+                      </Box>
                     </Box>
                   </Box>
 
@@ -233,8 +243,9 @@ export default function AllJobs({ filterParams = {} }) {  // ← accept filterPa
                 <Box>
                   <Typography fontWeight="bold">Skills Required</Typography>
                   <Box sx={{ mt: 1, display: "flex", gap: 1, flexWrap: "wrap" }}>
-                    {selectedJob.skills?.length > 0 ? (
-                      selectedJob.skills.map((skill, index) => (
+                    {/* ← safe for array, string, or undefined */}
+                    {getSkills(selectedJob.skills).length > 0 ? (
+                      getSkills(selectedJob.skills).map((skill, index) => (
                         <Chip key={index} label={skill} size="small" />
                       ))
                     ) : (
