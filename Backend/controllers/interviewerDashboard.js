@@ -447,6 +447,8 @@ export const getScheduledInterviews = async (req,res,next)=>{
 }
 
 export const getResumeUrl = async (req, res) => {
+
+  console.log("Resume API hit ")
   const { applicationId } = req.params;
 
   const [rows] = await db.execute(

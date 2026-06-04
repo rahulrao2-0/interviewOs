@@ -57,7 +57,7 @@ export default function ApplicantFullDetail() {
 
   const downloadResume = async () => {
   const res = await fetch(
-    `http://your-api/api/resume/${applicantDetail.app_id}`,
+    `http://ec2-13-126-64-8.ap-south-1.compute.amazonaws.com:5000/api/resume/${applicantDetail.app_id}`,
     {
       credentials: "include",
     }
