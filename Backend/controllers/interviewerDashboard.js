@@ -1,7 +1,8 @@
 import db from "../config/db.js";
 import ExpressError from "../ExpressError.js";
 import SendEmail from "../utils/SendEmail.js";
-
+import { GetObjectCommand } from "@aws-sdk/client-s3";
+import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { io } from "../app.js";
 
 export const getDashboard = async (req, res, next) => {
@@ -444,3 +445,39 @@ export const getScheduledInterviews = async (req,res,next)=>{
     next(new ExpressError("Failed to fetch scheduled interviews", 500));
   }
 }
+
+export const getResumeUrl = async (req, res) => {
+  const { applicationId } = req.params;
+
+  const [rows] = await db.execute(
+    "SELECT resume_url FROM applications WHERE application_id = ?",
+    [applicationId]
+  );
+
+  if (!rows.length) {
+    return res.status(404).json({
+      success: false,
+      message: "Resume not found",
+    });
+  }
+
+  const resumeUrl = rows[0].resume_url;
+
+  const key = resumeUrl.split(".amazonaws.com/")[1];
+
+  const command = new GetObjectCommand({
+    Bucket: "interviewos-resumes-915116533522",
+    Key: key,
+  });
+
+  const signedUrl = await getSignedUrl(
+    s3,
+    command,
+    { expiresIn: 300 }
+  );
+
+  res.json({
+    success: true,
+    url: signedUrl,
+  });
+};
