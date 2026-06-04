@@ -86,7 +86,7 @@ export const applyJob = async (req, res, next) => {
 
       await s3.send(
         new PutObjectCommand({
-          Bucket: process.env.S3_BUCKET_NAME,
+          Bucket: "interviewos-resumes-915116533522",
           Key: fileKey,
           Body: req.file.buffer,
           ContentType: req.file.mimetype,
