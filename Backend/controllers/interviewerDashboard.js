@@ -458,6 +458,8 @@ export const getResumeUrl = async (req, res) => {
     [applicationId]
   );
 
+  console.log("Retrieved resume URL:", rows[0]?.resume_url);
+
   if (!rows.length) {
     return res.status(404).json({
       success: false,
@@ -479,6 +481,8 @@ export const getResumeUrl = async (req, res) => {
     command,
     { expiresIn: 300 }
   );
+
+  console.log("Generated signed URL:", signedUrl);
 
   res.json({
     success: true,

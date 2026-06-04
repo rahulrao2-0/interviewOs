@@ -64,7 +64,7 @@ export default function ApplicantFullDetail() {
   );
 
   const data = await res.json();
-
+  console.log("resume data ",data)
   if (data.success) {
     window.open(data.url, "_blank");
   }
