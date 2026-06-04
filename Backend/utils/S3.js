@@ -4,4 +4,4 @@ const s3 = new S3Client({
   region: "ap-south-1",
 });
 
-module.exports = s3;
+export default  s3;
