@@ -93,7 +93,7 @@ export const applyJob = async (req, res, next) => {
         })
       );
 
-      resumeUrl = `https://${process.env.S3_BUCKET_NAME}.s3.${process.env.AWS_REGION}.amazonaws.com/${fileKey}`;
+      resumeUrl = `https://interviewos-resumes-915116533522.s3.ap-south-1.amazonaws.com/${fileKey}`;
     }
 
     const [rows] = await db.execute(
