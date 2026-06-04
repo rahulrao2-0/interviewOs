@@ -1,5 +1,7 @@
 import db from "../config/db.js";
 import ExpressError from "../ExpressError.js";
+import { PutObjectCommand } from "@aws-sdk/client-s3";
+import s3 from "../utils/S3.js";
 
 import SkillMatchingEmailQueue from "../queues/SkillMatchingEmailQueue.js";
 
@@ -44,36 +46,73 @@ export const allJobs = async (req, res, next) => {
   }
 };
 
-export const applyJob = async (req,res,next)=>{
-  console.log("Apply Job Controller 👉", req.body);
-
-  try{
+export const applyJob = async (req, res, next) => {
+  try {
     console.log("userId in applyJob:", req.user.id);
     console.log("req.body:", req.body);
     console.log("req.file:", req.file);
-    const {email , phone , name , jobId}= req.body;
-    if(!email || !phone || !name || !jobId){
+
+    const { email, phone, name, jobId } = req.body;
+
+    if (!email || !phone || !name || !jobId) {
       throw new ExpressError("All fields are required", 400);
     }
-     const [job] = await db.execute("SELECT * FROM jobs JOIN users ON jobs.posted_by = users.user_id WHERE jobs.job_id = ?", [jobId]);
-    if(job[0].posted_by === req.user.id){
-       return res.status(400).json({ success: false, message: "You cannot apply to your own job" });
+
+    const [job] = await db.execute(
+      `SELECT *
+       FROM jobs
+       JOIN users ON jobs.posted_by = users.user_id
+       WHERE jobs.job_id = ?`,
+      [jobId]
+    );
+
+    if (job[0].posted_by === req.user.id) {
+      return res.status(400).json({
+        success: false,
+        message: "You cannot apply to your own job",
+      });
+    }
+
+    let resumeUrl = null;
+
+    // Upload Resume To S3
+    if (req.file) {
+      const fileKey = `resumes/${Date.now()}-${req.file.originalname}`;
+
+      await s3.send(
+        new PutObjectCommand({
+          Bucket: process.env.S3_BUCKET_NAME,
+          Key: fileKey,
+          Body: req.file.buffer,
+          ContentType: req.file.mimetype,
+        })
+      );
+
+      resumeUrl = `https://${process.env.S3_BUCKET_NAME}.s3.${process.env.AWS_REGION}.amazonaws.com/${fileKey}`;
     }
 
     const [rows] = await db.execute(
-      "INSERT INTO applications (name, email, ph_no, job_id, user_id) VALUES (?, ?, ?, ?, ?)",
-      [req.body.name, req.body.email, req.body.phone, req.body.jobId, req.user.id]
+      `INSERT INTO applications
+      (name, email, ph_no, job_id, user_id, resume_url)
+      VALUES (?, ?, ?, ?, ?, ?)`,
+      [name, email, phone, jobId, req.user.id, resumeUrl]
     );
 
-    console.log("Application inserted with ID:", rows);
+    console.log("Application inserted:", rows);
 
-    res.json({ success: true, message: "Application submitted successfully" });
-
-  }catch(err){
-    res.json({ success: false, message: err.message });
+    res.json({
+      success: true,
+      message: "Application submitted successfully",
+      resumeUrl,
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({
+      success: false,
+      message: err.message,
+    });
   }
-}
-
+};
 export const postJob = async (req, res, next) => {
   try {
     const posted_by = req.user.id; // maps to users.user_id

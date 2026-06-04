@@ -1,9 +1,7 @@
 import express from "express";
 import { allJobs , applyJob , postJob,myJobs,deleteJob,editJob,filterJobs } from "../controllers/jobs.js";
 import { authMiddleware } from "../middleware/authValidate.js";
-import multer from "multer";
-
-const upload = multer({ dest: "uploads/" });
+import upload from "../utils/multer.js";
 
 const router = express.Router();
 
