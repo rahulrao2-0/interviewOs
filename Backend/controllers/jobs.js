@@ -1,4 +1,6 @@
 import db from "../config/db.js";
+import dotenv from "dotenv";
+dotenv.config({ path: "./.env" });
 import ExpressError from "../ExpressError.js";
 import { PutObjectCommand } from "@aws-sdk/client-s3";
 import s3 from "../utils/S3.js";

@@ -1,6 +1,7 @@
 import db from "../config/db.js";
 import ExpressError from "../ExpressError.js";
 
+
 import SendEmail from "../utils/SendEmail.js";
 
 export const applicants = async (req, res, next) => {
