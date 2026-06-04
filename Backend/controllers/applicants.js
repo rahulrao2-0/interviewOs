@@ -248,6 +248,8 @@ export const profileExist = async(req,res,next)=>{
   try{
     const userId = req.user.id;
 
+    console.log("Profile exist API hit for user ID:", userId);
+
     const [existing] = await db.execute("SELECT * FROM student_details WHERE student_id = ?", [userId]);
 
     console.log("Profile exist check for user ID:", userId, "Result:", existing);
