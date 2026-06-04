@@ -451,8 +451,10 @@ export const getResumeUrl = async (req, res) => {
   console.log("Resume API hit ")
   const { applicationId } = req.params;
 
+  console.log("Fetching resume for application ID:", applicationId);
+
   const [rows] = await db.execute(
-    "SELECT resume_url FROM applications WHERE application_id = ?",
+    "SELECT resume_url FROM applications WHERE app_id = ?",
     [applicationId]
   );
 
