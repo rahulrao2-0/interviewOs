@@ -55,6 +55,21 @@ export default function ApplicantFullDetail() {
     fetchApplicantDetail();
   }, [applicantId]);
 
+  const downloadResume = async () => {
+  const res = await fetch(
+    `http://your-api/api/resume/${applicantDetail.app_id}`,
+    {
+      credentials: "include",
+    }
+  );
+
+  const data = await res.json();
+
+  if (data.success) {
+    window.open(data.url, "_blank");
+  }
+};
+
   const handleSelectionUpdate = async (status) => {
     try {
       const response = await fetch(
@@ -473,25 +488,12 @@ export default function ApplicantFullDetail() {
               </Button>
 
               <Button
-              fullWidth
-              variant="outlined"
-             disabled={!applicantDetail.resume_url}
-             onClick={() => {
-            if (applicantDetail.resume_url) {
-            window.open(applicantDetail.resume_url, "_blank");
-            }
-            }}
-          sx={{
-         mt: 1.5,
-         py: 1.2,
-         borderRadius: 2,
-         textTransform: "none",
-         fontWeight: 800,
-         }}
-         > 
-        Download Resume
-        </Button>
-
+               fullWidth
+               variant="outlined"
+               onClick={downloadResume}
+              >
+              Download Resume
+             </Button>
               {/* STATUS */}
 
               <Box
