@@ -473,23 +473,24 @@ export default function ApplicantFullDetail() {
               </Button>
 
               <Button
-                fullWidth
-                variant="outlined"
-                href={
-                  applicantDetail.resume_link_portfolio ||
-                  "#"
-                }
-                target="_blank"
-                sx={{
-                  mt: 1.5,
-                  py: 1.2,
-                  borderRadius: 2,
-                  textTransform: "none",
-                  fontWeight: 800,
-                }}
-              >
-                View Resume / Portfolio
-              </Button>
+              fullWidth
+              variant="outlined"
+             disabled={!applicantDetail.resume_url}
+             onClick={() => {
+            if (applicantDetail.resume_url) {
+            window.open(applicantDetail.resume_url, "_blank");
+            }
+            }}
+          sx={{
+         mt: 1.5,
+         py: 1.2,
+         borderRadius: 2,
+         textTransform: "none",
+         fontWeight: 800,
+         }}
+         > 
+        Download Resume
+        </Button>
 
               {/* STATUS */}
 

@@ -206,6 +206,7 @@ export const applicantFullDetail = async(req,res,next)=>{
       a.app_id,
       a.status AS application_status,
       a.applied_at,
+      a.resume_url,
 
       j.job_id,
       j.company,
