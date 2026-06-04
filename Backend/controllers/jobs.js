@@ -77,6 +77,9 @@ export const applyJob = async (req, res, next) => {
 
     let resumeUrl = null;
 
+    console.log("Bucket Name:", process.env.S3_BUCKET_NAME);
+   console.log("Region:", process.env.AWS_REGION);
+
     // Upload Resume To S3
     if (req.file) {
       const fileKey = `resumes/${Date.now()}-${req.file.originalname}`;
