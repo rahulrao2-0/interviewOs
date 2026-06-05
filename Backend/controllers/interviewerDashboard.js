@@ -379,7 +379,7 @@ export const scheduleInterview = async (req, res, next) => {
 
     
 
-    // SOCKET EMIT EXAMPLE
+    
     io.to(String(student_id)).emit(
   "receive_message",
   {
@@ -393,6 +393,7 @@ Interview Scheduled
 Company: ${applicant.company}
 Role: ${applicant.job_name}
 Date: ${formattedDate}
+meeting link: ${meeting_link};
     `,
 
     type: "INTERVIEW_SCHEDULED",
