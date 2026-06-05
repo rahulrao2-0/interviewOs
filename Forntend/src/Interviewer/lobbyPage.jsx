@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState,useParams } from "react";
 import { useNavigate } from "react-router-dom";
 import { Box, Typography } from "@mui/material";
 import { v4 as uuidv4 } from "uuid";
@@ -6,7 +6,7 @@ import { v4 as uuidv4 } from "uuid";
 export default function Lobby() {
   const localVideoRef = useRef(null);
   const localStreamRef = useRef(null);
-  const roomId = uuidv4();
+  const student_id= useParams()
 
   console.log(roomId);
 
@@ -48,16 +48,55 @@ export default function Lobby() {
     }
   };
 
-  const handleConnect = () => {
-    if (!username.trim()) {
-      setError("Please enter your name before joining.");
+  const handleConnect = async () => {
+  if (!username.trim()) {
+    setError("Please enter your name before joining.");
+    return;
+  }
+
+  try {
+    setConnecting(true);
+
+    const response = await fetch(
+      "http://ec2-13-126-64-8.ap-south-1.compute.amazonaws.com:5000/api/getMeetingUrl",
+      {
+        method: "POST",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          student_id,
+        }),
+      }
+    );
+
+    const data = await response.json();
+
+    if (!data.success) {
+      setError(data.message || "Meeting link not found");
+      setConnecting(false);
       return;
     }
+
     setError("");
-    setConnecting(true);
-    localStreamRef.current?.getTracks().forEach((track) => track.stop());
-    navigate(`/call/${roomId}`, { state: { username } });
-  };
+
+    localStreamRef.current?.getTracks().forEach((track) =>
+      track.stop()
+    );
+
+    
+    navigate(`${data.url}`, {
+      replace: true,
+    });
+
+  } catch (err) {
+    console.error(err);
+    setError("Failed to connect to meeting");
+  } finally {
+    setConnecting(false);
+  }
+};
 
   const getCheckState = (available) => {
     if (available === null) return "pending";

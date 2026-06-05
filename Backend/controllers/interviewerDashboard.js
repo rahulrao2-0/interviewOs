@@ -547,3 +547,31 @@ export const getResumeUrl = async (req, res) => {
     url: signedUrl,
   });
 };
+
+export const getMeetingUrl = async (req, res, next) => {
+  try {
+    const { student_id } = req.body;
+
+    const [rows] = await db.execute(
+      "SELECT meeting_link FROM interviews WHERE student_id = ?",
+      [student_id]
+    );
+
+    console.log("Result in Get Meeting URL:", rows);
+
+    if (rows.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: "Meeting link not found",
+      });
+    }
+
+    res.json({
+      success: true,
+      url: rows[0].meeting_link,
+    });
+
+  } catch (err) {
+    next(new ExpressError("Failed to fetch Meeting URL", 500));
+  }
+};
