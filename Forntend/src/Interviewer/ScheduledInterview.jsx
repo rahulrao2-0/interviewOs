@@ -46,12 +46,10 @@ export default function ScheduledInterview({ setActiveView }) {
   }, []);
 
   /* ── Join ── */
-  const handleJoin = (meetingLink) => {
-    if (meetingLink) {
-      window.open(meetingLink, "_blank");
-    } else {
-      navigate("/video-meet");
-    }
+  const handleJoinInterview = (student_id) => {
+    navigate(`/video-meet/${student_id}`);
+  };
+  
   };
 
   /* ── Reschedule ── */
@@ -449,7 +447,7 @@ function InterviewCard({ item, onJoin, onReschedule, onCancel, onMarkComplete, g
           startIcon={<VideoCall sx={{ fontSize: 17 }} />}
           size="small"
           disabled={isDone}
-          onClick={() => onJoin(item.meeting_link)}
+          onClick={handleJoinInterview(item.student_id)}
           sx={{
             borderRadius: "10px", textTransform: "none",
             fontWeight: 700, fontSize: 13,

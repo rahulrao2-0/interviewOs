@@ -7,6 +7,8 @@ import { io } from "../app.js";
 import s3 from "../utils/S3.js";
 import redis from "../Redis.js";
 
+import {v4 as uuidv4} from "uuid";
+
 
 export const getDashboard = async (req, res, next) => {
   try {
@@ -157,6 +159,8 @@ export const scheduleInterview = async (req, res, next) => {
     // logged in interviewer
     const interviewer_id = req.user.id;
 
+    const meeting_link=`http://ec2-13-126-64-8.ap-south-1.compute.amazonaws.com/call/${uuidv4()}`
+    
     // validation
     if (
       !application_id ||
