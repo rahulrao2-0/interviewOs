@@ -17,9 +17,50 @@ import {
 } from "@mui/icons-material";
 
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+
 
 export default function ScheduledInterview({ setActiveView }) {
   const [interviews, setInterviews] = useState([]);
+  const [interviewDate, setInterviewDate] = useState("");
+  const navigate = useNavigate();
+
+
+  const handlejoinInterview = () => {
+    navigate("/video-meet");
+  }
+
+  const handleInterviewReschedule = async () => {
+    try {
+      if (!interviewDate) {
+        return alert("Please select interview date and time");
+      }
+
+      const response = await fetch(`http://ec2-13-126-64-8.ap-south-1.compute.amazonaws.com:5000/api/schedule-interview`, {
+        method: "POST",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          application_id: applicantDetail?.app_id,
+          student_id: applicantDetail?.student_id,
+          interview_date: interviewDate,
+          status: "interview_scheduled"
+        }),
+      });
+
+      const res = await response.json();
+
+      if (res.success) {
+        alert("Interview scheduled successfully");
+      } else {
+        alert("Failed to schedule interview");
+      }
+    } catch (err) {
+      console.log("Failed to schedule interview", err);
+    }
+  };
 
   useEffect(() => {
     const fetchInterviews = async () => {
@@ -285,34 +326,97 @@ export default function ScheduledInterview({ setActiveView }) {
                 <Divider sx={{ borderColor: "#f1f5f9" }} />
 
                 {/* Action buttons */}
-                <Box
-                  sx={{
-                    px: 3,
-                    py: 2,
-                    display: "flex",
-                    gap: 1.5,
-                    flexWrap: "wrap",
-                    justifyContent: "flex-end",
-                    alignItems: "center",
-                    bgcolor: "#f8fafc",
-                  }}
-                >
-                  <Button
-                    variant="outlined"
-                    startIcon={<CalendarMonth sx={{ fontSize: 17 }} />}
-                    size="small"
-                    sx={{
-                      borderRadius: "10px",
-                      textTransform: "none",
-                      fontWeight: 700,
-                      fontSize: 13,
-                      borderColor: "#cbd5e1",
-                      color: "#475569",
-                      "&:hover": { borderColor: "#94a3b8", bgcolor: "#f1f5f9" },
-                    }}
-                  >
-                    Reschedule
-                  </Button>
+                              <Box
+                                sx={{
+                                  mt: 3,
+                                  p: 2.5,
+                                  borderRadius: 3,
+                                  background:
+                                    "linear-gradient(135deg, #ffffff 0%, #f8fafc 100%)",
+                                  border: "1px solid #e2e8f0",
+                                  boxShadow:
+                                    "0 4px 20px rgba(15,23,42,0.05)",
+                                }}
+                              >
+                                <Typography
+                                  sx={{
+                                    fontSize: 15,
+                                    fontWeight: 800,
+                                    color: "#0f172a",
+                                    mb: 2,
+                                    display: "flex",
+                                    alignItems: "center",
+                                    gap: 1,
+                                  }}
+                                >
+                                  <CalendarMonthIcon
+                                    sx={{
+                                      fontSize: 20,
+                                      color: "#1976d2",
+                                    }}
+                                  />
+                
+                                  Reschedule Interview
+                                </Typography>
+                
+                                <TextField
+                                  fullWidth
+                                  type="datetime-local"
+                                  value={interviewDate}
+                                  onChange={(e) =>
+                                    setInterviewDate(e.target.value)
+                                  }
+                                  InputLabelProps={{
+                                    shrink: true,
+                                  }}
+                                  sx={{
+                                    mb: 2,
+                
+                                    "& .MuiOutlinedInput-root": {
+                                      borderRadius: 2,
+                                      bgcolor: "#fff",
+                                      fontWeight: 700,
+                                    },
+                                  }}
+                                  InputProps={{
+                                    startAdornment: (
+                                      <InputAdornment position="start">
+                                        <CalendarMonthIcon
+                                          sx={{
+                                            color: "#64748b",
+                                          }}
+                                        />
+                                      </InputAdornment>
+                                    ),
+                                  }}
+                                />
+                
+                                <Button
+                                  fullWidth
+                                  variant="contained"
+                                  onClick={
+                                    handleInterviewReschedule
+                                  }
+                                  sx={{
+                                    py: 1.3,
+                                    borderRadius: 2.5,
+                                    textTransform: "none",
+                                    fontWeight: 800,
+                                    fontSize: 15,
+                                    background:
+                                      "linear-gradient(135deg, #2563eb 0%, #1e3a8a 100%)",
+                                    boxShadow:
+                                      "0 8px 20px rgba(37,99,235,0.25)",
+                
+                                    "&:hover": {
+                                      background:
+                                        "linear-gradient(135deg, #1d4ed8 0%, #172554 100%)",
+                                    },
+                                  }}
+                                >
+                                  Reschedule Interview
+                                </Button>
+                              </Box>
 
                   <Button
                     variant="outlined"
@@ -333,7 +437,7 @@ export default function ScheduledInterview({ setActiveView }) {
                     variant="contained"
                     startIcon={<VideoCall sx={{ fontSize: 17 }} />}
                     size="small"
-                    onClick={() => item.meeting_link && window.open(item.meeting_link, "_blank")}
+                    onClick={handlejoinInterview}
                     sx={{
                       borderRadius: "10px",
                       textTransform: "none",
