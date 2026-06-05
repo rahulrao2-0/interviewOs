@@ -5,46 +5,74 @@ import ExpressError from "../ExpressError.js";
 import { PutObjectCommand } from "@aws-sdk/client-s3";
 import s3 from "../utils/S3.js";
 
+import redis from "../Redis.js";
+
 import SkillMatchingEmailQueue from "../queues/SkillMatchingEmailQueue.js";
 
 
 
 export const allJobs = async (req, res, next) => {
   try {
-    const page = parseInt(req.query.page) || 1;
-    const limit = parseInt(req.query.limit) || 5;
+    const page = Number(req.query.page) || 1;
+    const limit = Number(req.query.limit) || 5;
 
     const offset = (page - 1) * limit;
 
-    // ✅ Ensure numbers (IMPORTANT)
-    const limitNum = Number(limit);
-    const offsetNum = Number(offset);
+    const cacheKey = `alljobs:page:${page}:limit:${limit}`;
 
-    // 🔥 Get paginated jobs
+    // Check Redis Cache
+    const cachedJobs = await redis.get(cacheKey);
+
+    if (cachedJobs) {
+      console.log("All Jobs Cache Hit");
+      return res.status(200).json(JSON.parse(cachedJobs));
+    }
+
+    console.log("All Jobs Cache Miss");
+
     const [jobs] = await db.execute(`
-      SELECT j.*, u.username, u.email
+      SELECT
+        j.*,
+        u.username,
+        u.email
       FROM jobs j
-      LEFT JOIN users u ON j.posted_by = u.user_id
-      LIMIT ${limitNum} OFFSET ${offsetNum}
+      LEFT JOIN users u
+        ON j.posted_by = u.user_id
+      ORDER BY j.created_at DESC
+      LIMIT ${limit}
+      OFFSET ${offset}
     `);
 
-    // 🔥 Get total count
-    const [countResult] = await db.execute(
-      "SELECT COUNT(*) AS total FROM jobs"
-    );
+    const [[{ total }]] = await db.execute(`
+      SELECT COUNT(*) AS total
+      FROM jobs
+    `);
 
-    const totalJobs = countResult[0].total;
-
-    res.json({
+    const responseData = {
       success: true,
       jobs,
-      totalJobs,
-      totalPages: Math.ceil(totalJobs / limitNum),
+      totalJobs: total,
+      totalPages: Math.ceil(total / limit),
       currentPage: page,
-    });
+    };
+
+    // Cache for 10 minutes
+    await redis.set(
+      cacheKey,
+      JSON.stringify(responseData),
+      "EX",
+      600
+    );
+
+    return res.status(200).json(responseData);
 
   } catch (err) {
-    res.json({ success: false, message: err.message });
+    console.error("All Jobs Error:", err);
+
+    return res.status(500).json({
+      success: false,
+      message: err.message,
+    });
   }
 };
 
