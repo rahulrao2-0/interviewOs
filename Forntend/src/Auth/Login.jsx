@@ -79,7 +79,7 @@ export default function Login() {
       setError(res.message || "Login failed");
     }
 
-    if(res.user.profileExist===1){
+    if(res.user===1){
       navigate("/");
     }else{
       navigate("/profileSetup", {
