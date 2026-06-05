@@ -109,7 +109,7 @@ export const Login = async (req, res, next) => {
 
     // Find user
     const [users] = await db.execute(
-      `SELECT user_id, username, password 
+      `SELECT user_id, username, password ,profileExist
        FROM users 
        WHERE username = ?`,
       [username]
@@ -155,7 +155,7 @@ export const Login = async (req, res, next) => {
       success: true,
       message: "User successfully logged in",
       jwtToken: token,
-      user:user,
+      user:user.profileExist,
     });
 
   } catch (err) {

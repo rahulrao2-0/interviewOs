@@ -74,11 +74,17 @@ export default function Login() {
         password: "",
       });
 
+      
+    } else {
+      setError(res.message || "Login failed");
+    }
+
+    if(res.user.profileExist){
+      navigate("/");
+    }else{
       navigate("/profileSetup", {
         replace: true,
       });
-    } else {
-      setError(res.message || "Login failed");
     }
   } catch (err) {
     console.error("Login Error:", err);
