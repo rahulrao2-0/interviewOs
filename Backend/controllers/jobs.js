@@ -122,6 +122,8 @@ export const postJob = async (req, res, next) => {
   try {
     const posted_by = req.user.id; // maps to users.user_id
 
+    await redis.del(`dashboard:${posted_by}`);
+
     const {
       company,
       job_name,

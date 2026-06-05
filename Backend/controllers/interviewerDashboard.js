@@ -9,81 +9,132 @@ export const getDashboard = async (req, res, next) => {
   try {
     const posted_by = req.user.id;
 
-    /* ── Stats ── */
-    const [[{ total_jobs }]] = await db.execute(
-      `SELECT COUNT(*) AS total_jobs FROM jobs WHERE posted_by = ?`,
-      [posted_by]
-    );
+    const cacheKey = `dashboard:${posted_by}`;
 
-    const [[{ total_applicants }]] = await db.execute(
-      `SELECT COUNT(*) AS total_applicants
-       FROM applications a
-       JOIN jobs j ON a.job_id = j.job_id
-       WHERE j.posted_by = ?`,
-      [posted_by]
-    );
+    // ---------------------------
+    // 1. Check Redis Cache
+    // ---------------------------
+    const cachedDashboard = await redis.get(cacheKey);
 
-    const [[{ shortlisted }]] = await db.execute(
-      `SELECT COUNT(*) AS shortlisted
-       FROM applications a
-       JOIN jobs j ON a.job_id = j.job_id
-       WHERE j.posted_by = ? AND a.status = 'shortlisted'`,
-      [posted_by]
-    );
+    if (cachedDashboard) {
+      console.log("Dashboard Cache Hit");
 
-    const [[{ rejected }]] = await db.execute(
-      `SELECT COUNT(*) AS rejected
-       FROM applications a
-       JOIN jobs j ON a.job_id = j.job_id
-       WHERE j.posted_by = ? AND a.status = 'rejected'`,
-      [posted_by]
-    );
+      return res.status(200).json(JSON.parse(cachedDashboard));
+    }
 
-    /* ── Recent Jobs (latest 5) ── */
-    const [recent_jobs] = await db.execute(
-      `SELECT job_id, job_name, company, job_type, created_at
-       FROM jobs
-       WHERE posted_by = ?
-       ORDER BY created_at DESC
-       LIMIT 5`,
-      [posted_by]
-    );
+    console.log("Dashboard Cache Miss");
 
-    /* ── Recent Applicants (latest 5) ── */
-    const [recent_applicants] = await db.execute(
-      `SELECT
+    // ---------------------------
+    // 2. Run Queries In Parallel
+    // ---------------------------
+    const [
+      [[{ total_jobs }]],
+      [[stats]],
+      [recent_jobs],
+      [recent_applicants],
+    ] = await Promise.all([
+      db.execute(
+        `
+        SELECT COUNT(*) AS total_jobs
+        FROM jobs
+        WHERE posted_by = ?
+        `,
+        [posted_by]
+      ),
+
+      db.execute(
+        `
+        SELECT
+          COUNT(*) AS total_applicants,
+
+          SUM(
+            CASE
+              WHEN a.status = 'shortlisted'
+              THEN 1
+              ELSE 0
+            END
+          ) AS shortlisted,
+
+          SUM(
+            CASE
+              WHEN a.status = 'rejected'
+              THEN 1
+              ELSE 0
+            END
+          ) AS rejected
+
+        FROM applications a
+        JOIN jobs j
+          ON a.job_id = j.job_id
+
+        WHERE j.posted_by = ?
+        `,
+        [posted_by]
+      ),
+
+      db.execute(
+        `
+        SELECT
+          job_id,
+          job_name,
+          company,
+          job_type,
+          created_at
+        FROM jobs
+        WHERE posted_by = ?
+        ORDER BY created_at DESC
+        LIMIT 5
+        `,
+        [posted_by]
+      ),
+
+      db.execute(
+        `
+        SELECT
           a.app_id,
           a.name,
           a.status,
           a.applied_at,
           j.job_name
-       FROM applications a
-       JOIN jobs j ON a.job_id = j.job_id
-       WHERE j.posted_by = ?
-       ORDER BY a.applied_at DESC
-       LIMIT 5`,
-      [posted_by]
-    );
+        FROM applications a
+        JOIN jobs j
+          ON a.job_id = j.job_id
+        WHERE j.posted_by = ?
+        ORDER BY a.applied_at DESC
+        LIMIT 5
+        `,
+        [posted_by]
+      ),
+    ]);
 
-    res.status(200).json({
+    const responseData = {
       success: true,
       stats: {
         total_jobs,
-        total_applicants,
-        shortlisted,
-        rejected,
+        total_applicants: stats.total_applicants || 0,
+        shortlisted: stats.shortlisted || 0,
+        rejected: stats.rejected || 0,
       },
       recent_jobs,
       recent_applicants,
-    });
+    };
+
+    // ---------------------------
+    // 3. Cache Dashboard
+    // ---------------------------
+    await redis.setEx(
+      cacheKey,
+      300, // 5 Minutes
+      JSON.stringify(responseData)
+    );
+
+    return res.status(200).json(responseData);
 
   } catch (err) {
-    console.log("Dashboard Error:", err);
+    console.error("Dashboard Error:", err);
     next(new expressError("Failed to load dashboard", 500));
   }
 };
-
-
 
 export const scheduleInterview = async (req, res, next) => {
   console.log(
