@@ -155,7 +155,7 @@ export const Login = async (req, res, next) => {
       success: true,
       message: "User successfully logged in",
       jwtToken: token,
-      user:user
+      user:user,
     });
 
   } catch (err) {
