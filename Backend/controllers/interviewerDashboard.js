@@ -5,6 +5,9 @@ import { GetObjectCommand } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { io } from "../app.js";
 import s3 from "../utils/S3.js";
+import redis from "../Redis.js";
+
+
 export const getDashboard = async (req, res, next) => {
   try {
     const posted_by = req.user.id;
