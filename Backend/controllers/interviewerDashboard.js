@@ -125,10 +125,11 @@ export const getDashboard = async (req, res, next) => {
     // ---------------------------
     // 3. Cache Dashboard
     // ---------------------------
-    await redis.setEx(
-      cacheKey,
-      300, // 5 Minutes
-      JSON.stringify(responseData)
+    await redis.set(
+     cacheKey,
+     JSON.stringify(responseData),
+     "EX",
+    300
     );
 
     return res.status(200).json(responseData);
