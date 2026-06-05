@@ -46,10 +46,8 @@ export default function ScheduledInterview({ setActiveView }) {
   }, []);
 
   /* ── Join ── */
-  const handleJoinInterview = (student_id) => {
+  const handleJoinInterview = (student_id) => {  // ← fixed: removed stray }; below
     navigate(`/video-meet/${student_id}`);
-  };
-  
   };
 
   /* ── Reschedule ── */
@@ -227,7 +225,7 @@ export default function ScheduledInterview({ setActiveView }) {
               <InterviewCard
                 key={item.interview_id}
                 item={item}
-                onJoin={handleJoin}
+                onJoin={handleJoinInterview}   // ← pass function reference
                 onReschedule={handleReschedule}
                 onCancel={handleCancel}
                 onMarkComplete={handleMarkComplete}
@@ -244,7 +242,7 @@ export default function ScheduledInterview({ setActiveView }) {
 }
 
 /* ─────────────────────────────
-   InterviewCard — own state for reschedule date
+   InterviewCard
 ───────────────────────────── */
 function InterviewCard({ item, onJoin, onReschedule, onCancel, onMarkComplete, getStatusStyle, formatDate, formatTime }) {
   const [interviewDate, setInterviewDate] = useState("");
@@ -364,9 +362,7 @@ function InterviewCard({ item, onJoin, onReschedule, onCancel, onMarkComplete, g
       {/* ── RESCHEDULE BOX ── */}
       <Box
         sx={{
-          m: 2.5,
-          p: 2.5,
-          borderRadius: 3,
+          m: 2.5, p: 2.5, borderRadius: 3,
           background: "linear-gradient(135deg, #ffffff 0%, #f8fafc 100%)",
           border: "1px solid #e2e8f0",
           boxShadow: "0 4px 20px rgba(15,23,42,0.05)",
@@ -419,17 +415,11 @@ function InterviewCard({ item, onJoin, onReschedule, onCancel, onMarkComplete, g
           {loading ? "Rescheduling..." : "Reschedule Interview"}
         </Button>
       </Box>
-      {/* ── RESCHEDULE BOX END ── */}
 
       <Divider sx={{ borderColor: "#f1f5f9" }} />
 
       {/* ── ACTION BUTTONS ── */}
-      <Box
-        sx={{
-          px: 3, py: 2,
-          display: "flex", gap: 1.5, flexWrap: "wrap", alignItems: "center",
-        }}
-      >
+      <Box sx={{ px: 3, py: 2, display: "flex", gap: 1.5, flexWrap: "wrap", alignItems: "center" }}>
         <Button
           variant="outlined"
           color="error"
@@ -447,7 +437,7 @@ function InterviewCard({ item, onJoin, onReschedule, onCancel, onMarkComplete, g
           startIcon={<VideoCall sx={{ fontSize: 17 }} />}
           size="small"
           disabled={isDone}
-          onClick={handleJoinInterview(item.student_id)}
+          onClick={() => onJoin(item.student_id)}  // ← fixed: wrapped in arrow function
           sx={{
             borderRadius: "10px", textTransform: "none",
             fontWeight: 700, fontSize: 13,
@@ -474,10 +464,8 @@ function InterviewCard({ item, onJoin, onReschedule, onCancel, onMarkComplete, g
           Mark Complete
         </Button>
       </Box>
-      {/* ── ACTION BUTTONS END ── */}
 
     </Paper>
-    // ← Paper closes here, after ALL sections
   );
 }
 
@@ -507,12 +495,8 @@ function StatCard({ title, value, accent }) {
 function InfoRow({ icon, text }) {
   return (
     <Box sx={{ display: "flex", gap: 1, alignItems: "center" }}>
-      <Box sx={{ color: "#94a3b8", display: "flex", alignItems: "center" }}>
-        {icon}
-      </Box>
-      <Typography sx={{ fontWeight: 600, fontSize: 13.5, color: "#334155" }}>
-        {text}
-      </Typography>
+      <Box sx={{ color: "#94a3b8", display: "flex", alignItems: "center" }}>{icon}</Box>
+      <Typography sx={{ fontWeight: 600, fontSize: 13.5, color: "#334155" }}>{text}</Typography>
     </Box>
   );
 }
