@@ -152,7 +152,6 @@ export const scheduleInterview = async (req, res, next) => {
     const {
       application_id,
       interview_date,
-      meeting_link,
       student_id,
     } = req.body;
 
