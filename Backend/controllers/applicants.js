@@ -382,6 +382,13 @@ export const StudentProfileSetup = async (req, res, next) => {
 
     console.log(`${skillsArray.length} skills inserted for student ID: ${student_id}`);
 
+
+    if(result.insertId){
+      await db.execute(
+        `UPDATE users SET profileExist = ? WHERE user_id = ?`,
+        [true, student_id]
+      );
+    }
     /* ─────────────────────────────
        Success Response
     ───────────────────────────── */
@@ -482,6 +489,13 @@ export const InterviewerProfileSetup = async (req, res, next) => {
         website || null,
       ]
     );
+
+    if(result.insertId){
+      await db.execute(
+        `UPDATE users SET profileExist = ? WHERE user_id = ?`,
+        [true, interviewer_id]
+      );
+    }
 
     res.status(201).json({
       success: true,
