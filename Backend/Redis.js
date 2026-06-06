@@ -1,16 +1,16 @@
-// config/redis.js
-import { createClient } from "redis";
+import Redis from "ioredis";
 
-const redis = createClient({
-  url: "redis://127.0.0.1:6379",
+const redis = new Redis({
+  host: "127.0.0.1",
+  port: 6379,
+});
+
+redis.on("connect", () => {
+  console.log("✅ Redis Connected");
 });
 
 redis.on("error", (err) => {
-  console.error("Redis Error:", err);
+  console.error(err);
 });
-
-await redis.connect();
-
-console.log("✅ Redis Connected");
 
 export default redis;
