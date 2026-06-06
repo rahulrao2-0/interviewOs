@@ -59,7 +59,7 @@ export default function ScheduledInterview({ setActiveView }) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           application_id: app_id,
-          student_id,
+          student_id:student_id,
           interview_date: interviewDate,
           status: "interview_scheduled",
         }),
