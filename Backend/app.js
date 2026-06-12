@@ -47,8 +47,11 @@ const server = createServer(app);
 
 const io = new Server(server, {
   cors: {
-    origin: "http://ec2-13-126-64-8.ap-south-1.compute.amazonaws.com",
-    credentials:true
+    origin: [
+      "https://interviewos.online",
+      "https://www.interviewos.online"
+    ],
+    credentials: true
   }
 });
 
