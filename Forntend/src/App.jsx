@@ -39,7 +39,7 @@ function App() {
       <Route path="/interview-room/:userId" element={<InterviewRoom/>}/>
       <Route path="/student/messages/:userId" element={<StudentMessageInbox/>}/>
       <Route path="/video-meet/:userId" element={<Lobby/>}/>
-      <Route path="/call/:roomId" element={<VideoCall />} />
+      <Route path="/call/:student_id" element={<VideoCall />} />
       <Route path="/applicant/:applicantId" element={<ApplicantFullDetail/>}/>
       <Route path="/otp-verification" element={<OTPVerification/>}/>
       <Route path="/interviewer/edit-job/:job_id" element={<EditJob/>}/>
