@@ -6,7 +6,7 @@ import { v4 as uuidv4 } from "uuid";
 export default function Lobby() {
   const localVideoRef = useRef(null);
   const localStreamRef = useRef(null);
-  const student_id= useParams()
+  const {student_id}= useParams()
 
   
 
@@ -186,7 +186,7 @@ export default function Lobby() {
           <Box sx={styles.card}>
             <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
               <Typography sx={styles.fieldLabel}>Room</Typography>
-              <Box sx={styles.roomBadge}>{roomId}</Box>
+              <Box sx={styles.roomBadge}>{student_id}</Box>
             </Box>
           </Box>
 
