@@ -35,7 +35,7 @@ export default function Jobs() {
   useEffect(() => {
     const fetchJobs = async () => {
       try {
-        const res = await fetch("http://interviewos.online/api/my-jobs", {
+        const res = await fetch("https://interviewos.online/api/my-jobs", {
           credentials: "include",
         });
         const data = await res.json();
@@ -64,7 +64,7 @@ export default function Jobs() {
 
   try {
     const res = await fetch(
-      `http://interviewos.online/api/delete-job/${job_id}`,
+      `https://interviewos.online/api/delete-job/${job_id}`,
       {
         method: "DELETE",
         credentials: "include",

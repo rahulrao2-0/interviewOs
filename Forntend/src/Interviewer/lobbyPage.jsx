@@ -58,7 +58,7 @@ export default function Lobby() {
     setConnecting(true);
 
     const response = await fetch(
-      "http://interviewos.online/api/getMeetingUrl",
+      "https://interviewos.online/api/getMeetingUrl",
       {
         method: "POST",
         credentials: "include",

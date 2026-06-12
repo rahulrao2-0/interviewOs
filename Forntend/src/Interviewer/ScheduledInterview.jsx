@@ -22,7 +22,7 @@ import {
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
-const BASE = "http://interviewos.online";
+const BASE = "https://interviewos.online";
 
 export default function ScheduledInterview({ setActiveView }) {
   const [interviews, setInterviews] = useState([]);

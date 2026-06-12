@@ -25,7 +25,7 @@ import {
 
 import { useAuth } from "../AuthContext.jsx"
 
-const socket = io("http://interviewos.online", {
+const socket = io("https://interviewos.online", {
   withCredentials: true,
 });
 
@@ -137,7 +137,7 @@ export default function VideoCall() {
   const handleSend = async () => {
     try {
       const response = await fetch(
-        "http://interviewos.online/api/interviewer-inbox-users",
+        "https://interviewos.online/api/interviewer-inbox-users",
         {
           method: "GET",
           credentials: "include",
@@ -158,7 +158,7 @@ export default function VideoCall() {
 
   // ================= SEND ROOM ID =================
 
-  const interviewLink = `http://ec2-13-126-64-8.ap-south-1.compute.amazonaws.com:5173/call/${roomId}`;
+  const interviewLink = `https://interviewos.online/call/${roomId}`;
 
   const handleSendRoomId = async (receiverId) => {
 
@@ -171,7 +171,7 @@ export default function VideoCall() {
   ${interviewLink}
   `;
 
-    await fetch("http://interviewos.online/api/save-message", {
+    await fetch("https://interviewos.online/api/save-message", {
       method: "POST",
 
       credentials: "include",

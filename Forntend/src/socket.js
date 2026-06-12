@@ -1,7 +1,7 @@
 import { io } from "socket.io-client";
 
 
-const socket = io("http://interviewos.online", {
+const socket = io("https://interviewos.online", {
     withCredentials: true
 });
 

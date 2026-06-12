@@ -37,7 +37,7 @@ export default function Profile() {
   useEffect(() => {
     const fetchProfile = async () => {
       try {
-        const res = await fetch("http://interviewos.online/api/profile", {
+        const res = await fetch("https://interviewos.online/api/profile", {
           method: "GET",
           credentials: "include",
         });

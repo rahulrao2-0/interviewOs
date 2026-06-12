@@ -120,12 +120,12 @@ export default function ProfileSetup() {
       if (role === "student") {
 
         url =
-          "http://interviewos.online/api/student-profile-setup";
+          "https://interviewos.online/api/student-profile-setup";
 
       } else {
 
         url =
-          "http://interviewos.online/api/interviewer-profile-setup";
+          "https://interviewos.online/api/interviewer-profile-setup";
       }
 
       const response = await fetch(url, {

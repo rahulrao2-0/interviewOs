@@ -20,7 +20,7 @@ import { useEffect, useState } from "react";
 import Pagination from "./Pagination.jsx";
 import { useNavigate } from "react-router-dom";
 
-const BASE = "http://interviewos.online";
+const BASE = "https://interviewos.online";
 
 export default function AllJobs({ filterParams = {} }) {
   const navigate = useNavigate();

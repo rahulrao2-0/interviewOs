@@ -147,9 +147,11 @@ export const Login = async (req, res, next) => {
     res.cookie("token", token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
+      sameSite: "none",
       maxAge: 24 * 60 * 60 * 1000, // 1 day
     });
+
+   
 
     return res.status(200).json({
       success: true,
@@ -252,10 +254,11 @@ export const verifyOtp = async (req, res, next) => {
     // Save cookie
     res.cookie("token", token, {
       httpOnly: true,
-      secure: false,
-      sameSite: "lax",
+      secure: true,
+      sameSite: "none",
       maxAge: 24 * 60 * 60 * 1000,
     });
+    
 
     // Delete Redis temp data
     await redis.del(`otp:${formattedEmail}`);

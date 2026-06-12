@@ -37,7 +37,7 @@ export default function DashboardHome({ setActiveView }) {
   useEffect(() => {
     const fetchDashboard = async () => {
       try {
-        const res = await fetch("http://interviewos.online/api/dashboard", {
+        const res = await fetch("https://interviewos.online/api/dashboard", {
           method: "GET",
           credentials: "include",
         });

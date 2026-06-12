@@ -37,7 +37,7 @@ function Header() {
   useEffect(() => {
     const fetchProfile = async () => {
       try {
-        const res = await fetch("http://interviewos.online/api/profile", {
+        const res = await fetch("https://interviewos.online/api/profile", {
           credentials: "include",
         });
         const data = await res.json();
@@ -86,7 +86,7 @@ function Header() {
     }
     if (item === "Logout") {
       const logout = async () => {
-        const response = await fetch("http://interviewos.online/api/logout", {
+        const response = await fetch("https://interviewos.online/api/logout", {
           method: "GET",
           credentials: "include",
         })

@@ -64,7 +64,7 @@ const OTPVerification = () => {
       console.log("Entered OTP:", enteredOtp);
 
       const response = await fetch(
-        "http://interviewos.online/api/verify-otp",
+        "https://interviewos.online/api/verify-otp",
         {
           method: "POST",
           headers: {

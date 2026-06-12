@@ -41,7 +41,7 @@ export default function Login() {
 
   try {
     const response = await fetch(
-      "http://interviewos.online/api/login",
+      "https://interviewos.online/api/login",
       {
         method: "POST",
         credentials: "include",

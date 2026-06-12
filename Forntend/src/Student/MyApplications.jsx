@@ -18,7 +18,7 @@ export default function MyApplications() {
   useEffect(() => {
     const fetchApplications = async () => {
       try {
-        const res = await fetch("http://interviewos.online/api/my-applications", {
+        const res = await fetch("https://interviewos.online/api/my-applications", {
           method: "GET",
           credentials: "include",
         });

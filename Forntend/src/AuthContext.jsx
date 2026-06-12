@@ -15,7 +15,7 @@ export const AuthProvider = ({ children }) => {
 
   const checkAuth = async () => {
     try {
-      const res = await fetch("http://interviewos.online/api/me", {
+      const res = await fetch("https://interviewos.online/api/me", {
         method: "GET",
         credentials: "include", // IMPORTANT for cookies
       });

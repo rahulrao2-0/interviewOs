@@ -71,7 +71,7 @@ export default function AddPost() {
     }
 
     try {
-      const response = await fetch("http://interviewos.online/api/postJob", {
+      const response = await fetch("https://interviewos.online/api/postJob", {
         method: "POST",
         credentials: "include",
         headers: {

@@ -31,7 +31,7 @@ export default function Signup() {
     setSuccess("");
 
     try {
-      const response = await fetch("http://interviewos.online/api/signup", {
+      const response = await fetch("https://interviewos.online/api/signup", {
         method: "POST",
         credentials: "include",
         headers: {

@@ -33,7 +33,7 @@ export default function ApplicantFullDetail() {
     const fetchApplicantDetail = async () => {
       try {
         const response = await fetch(
-          `http://interviewos.online/api/applicantFullDetail/${applicantId}`,
+          `https://interviewos.online/api/applicantFullDetail/${applicantId}`,
           {
             method: "GET",
             credentials: "include",
@@ -57,7 +57,7 @@ export default function ApplicantFullDetail() {
 
   const downloadResume = async () => {
   const res = await fetch(
-    `http://interviewos.online/api/resume/${applicantDetail.app_id}`,
+    `https://interviewos.online/api/resume/${applicantDetail.app_id}`,
     {
       credentials: "include",
     }
@@ -73,7 +73,7 @@ export default function ApplicantFullDetail() {
   const handleSelectionUpdate = async (status) => {
     try {
       const response = await fetch(
-        `http://interviewos.online/api/updateSelectionStatus`,
+        `https://interviewos.online/api/updateSelectionStatus`,
         {
           method: "PUT",
 
@@ -109,7 +109,7 @@ export default function ApplicantFullDetail() {
         return alert("Please select interview date and time");
       }
 
-      const response = await fetch(`http://interviewos.online/api/schedule-interview`, {
+      const response = await fetch(`https://interviewos.online/api/schedule-interview`, {
         method: "POST",
         credentials: "include",
         headers: {
