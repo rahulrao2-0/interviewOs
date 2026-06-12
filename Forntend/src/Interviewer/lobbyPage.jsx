@@ -8,7 +8,7 @@ export default function Lobby() {
   const localStreamRef = useRef(null);
   const student_id= useParams()
 
-  console.log(roomId);
+  
 
   const [username, setUsername] = useState("");
   const [videoAvailable, setVideoAvailable] = useState(null);
