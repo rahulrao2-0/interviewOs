@@ -71,7 +71,7 @@ export default function AddPost() {
     }
 
     try {
-      const response = await fetch("http://ec2-13-126-64-8.ap-south-1.compute.amazonaws.com:5000/api/postJob", {
+      const response = await fetch("http://interviewos.online/api/postJob", {
         method: "POST",
         credentials: "include",
         headers: {

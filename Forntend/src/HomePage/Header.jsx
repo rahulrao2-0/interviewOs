@@ -37,7 +37,7 @@ function Header() {
   useEffect(() => {
     const fetchProfile = async () => {
       try {
-        const res = await fetch("http://ec2-13-126-64-8.ap-south-1.compute.amazonaws.com:5000/api/profile", {
+        const res = await fetch("http://interviewos.online/api/profile", {
           credentials: "include",
         });
         const data = await res.json();
@@ -86,7 +86,7 @@ function Header() {
     }
     if (item === "Logout") {
       const logout = async () => {
-        const response = await fetch("http://ec2-13-126-64-8.ap-south-1.compute.amazonaws.com:5000/api/logout", {
+        const response = await fetch("http://interviewos.online/api/logout", {
           method: "GET",
           credentials: "include",
         })
@@ -282,3 +282,4 @@ function Header() {
   );
 }
 export default Header;
+

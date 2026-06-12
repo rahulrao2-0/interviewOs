@@ -107,7 +107,7 @@ export default function InterviewRoom() {
       setFeedback("");
       setScore(null);
       setAnswer("");
-      const res = await fetch("http://ec2-13-126-64-8.ap-south-1.compute.amazonaws.com:5000/api/ai/interview-questions", {
+      const res = await fetch("http://interviewos.online/api/ai/interview-questions", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
@@ -138,7 +138,7 @@ export default function InterviewRoom() {
     try {
       setLoading(true);
       if (recognitionRef.current) { isListeningRef.current = false; setIsListening(false); recognitionRef.current.stop(); }
-      const res = await fetch("http://ec2-13-126-64-8.ap-south-1.compute.amazonaws.com:5000/api/ai/evaluate-answer", {
+      const res = await fetch("http://interviewos.online/api/ai/evaluate-answer", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",

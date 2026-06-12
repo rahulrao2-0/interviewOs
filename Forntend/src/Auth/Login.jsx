@@ -41,7 +41,7 @@ export default function Login() {
 
   try {
     const response = await fetch(
-      "http://ec2-13-126-64-8.ap-south-1.compute.amazonaws.com:5000/api/login",
+      "http://interviewos.online/api/login",
       {
         method: "POST",
         credentials: "include",

@@ -15,7 +15,7 @@ export const AuthProvider = ({ children }) => {
 
   const checkAuth = async () => {
     try {
-      const res = await fetch("http://ec2-13-126-64-8.ap-south-1.compute.amazonaws.com:5000/api/me", {
+      const res = await fetch("http://interviewos.online/api/me", {
         method: "GET",
         credentials: "include", // IMPORTANT for cookies
       });
@@ -56,3 +56,4 @@ export const AuthProvider = ({ children }) => {
 
 // custom hook
 export const useAuth = () => useContext(AuthContext);
+

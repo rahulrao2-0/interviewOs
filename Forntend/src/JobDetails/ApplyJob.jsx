@@ -41,7 +41,7 @@ export default function ApplyJob() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    const profileExist = await fetch("http://ec2-13-126-64-8.ap-south-1.compute.amazonaws.com:5000/api/profileExist", {
+    const profileExist = await fetch("http://interviewos.online/api/profileExist", {
       method: "GET",
       credentials: "include",
     });
@@ -73,7 +73,7 @@ export default function ApplyJob() {
         console.log(pair[0], pair[1]);
       }
       console.log("Submitting application with data:", formData);
-      const res = await fetch("http://ec2-13-126-64-8.ap-south-1.compute.amazonaws.com:5000/api/applyJob", {
+      const res = await fetch("http://interviewos.online/api/applyJob", {
         method: "POST",
         credentials: "include",
         body: formData,

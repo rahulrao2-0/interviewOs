@@ -49,7 +49,7 @@ export default function EditJob() {
     const fetchJob = async () => {
       try {
         const res = await fetch(
-          `http://ec2-13-126-64-8.ap-south-1.compute.amazonaws.com:5000/api/get-job/${job_id}`,
+          `http://interviewos.online/api/get-job/${job_id}`,
           { credentials: "include" }
         );
         const data = await res.json();
@@ -114,7 +114,7 @@ export default function EditJob() {
     setSubmitting(true);
     try {
       const response = await fetch(
-        `http://ec2-13-126-64-8.ap-south-1.compute.amazonaws.com:5000/api/edit-job/${job_id}`,
+        `http://interviewos.online/api/edit-job/${job_id}`,
         {
           method: "PUT",
           credentials: "include",

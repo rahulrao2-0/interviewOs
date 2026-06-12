@@ -35,7 +35,7 @@ export default function Header({ handleDrawerToggle }) {
     }
     if (item === "Logout") {
       const logout = async () => {
-        const response = await fetch("http://ec2-13-126-64-8.ap-south-1.compute.amazonaws.com:5000/api/logout", {
+        const response = await fetch("http://interviewos.online/api/logout", {
           method: "GET",
           credentials: "include",
         });

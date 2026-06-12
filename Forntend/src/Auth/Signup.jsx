@@ -31,7 +31,7 @@ export default function Signup() {
     setSuccess("");
 
     try {
-      const response = await fetch("http://ec2-13-126-64-8.ap-south-1.compute.amazonaws.com:5000/api/signup", {
+      const response = await fetch("http://interviewos.online/api/signup", {
         method: "POST",
         credentials: "include",
         headers: {

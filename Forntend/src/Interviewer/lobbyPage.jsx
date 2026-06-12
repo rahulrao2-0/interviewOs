@@ -58,7 +58,7 @@ export default function Lobby() {
     setConnecting(true);
 
     const response = await fetch(
-      "http://ec2-13-126-64-8.ap-south-1.compute.amazonaws.com:5000/api/getMeetingUrl",
+      "http://interviewos.online/api/getMeetingUrl",
       {
         method: "POST",
         credentials: "include",

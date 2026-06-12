@@ -120,12 +120,12 @@ export default function ProfileSetup() {
       if (role === "student") {
 
         url =
-          "http://ec2-13-126-64-8.ap-south-1.compute.amazonaws.com:5000/api/student-profile-setup";
+          "http://interviewos.online/api/student-profile-setup";
 
       } else {
 
         url =
-          "http://ec2-13-126-64-8.ap-south-1.compute.amazonaws.com:5000/api/interviewer-profile-setup";
+          "http://interviewos.online/api/interviewer-profile-setup";
       }
 
       const response = await fetch(url, {

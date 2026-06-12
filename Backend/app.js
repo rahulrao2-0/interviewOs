@@ -23,20 +23,25 @@ app.use(cookieParser());
 
 
 const allowedOrigins = [
-  
+  "http://interviewos.online",
+  "https://interviewos.online",
+  "http://www.interviewos.online",
+  "https://www.interviewos.online",
   "http://ec2-13-126-64-8.ap-south-1.compute.amazonaws.com"
 ];
 
-app.use(cors({
-  origin: function (origin, callback) {
-    if (!origin || allowedOrigins.includes(origin)) {
-      callback(null, true);
-    } else {
-      callback(new Error("Not allowed by CORS"));
-    }
-  },
-  credentials: true
-}));
+app.use(
+  cors({
+    origin: function (origin, callback) {
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error("Not allowed by CORS"));
+      }
+    },
+    credentials: true,
+  })
+);
 
 const server = createServer(app);
 
