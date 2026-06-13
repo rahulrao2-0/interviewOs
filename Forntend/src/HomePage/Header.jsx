@@ -11,15 +11,11 @@ import Avatar from '@mui/material/Avatar';
 import Button from '@mui/material/Button';
 import Tooltip from '@mui/material/Tooltip';
 import MenuItem from '@mui/material/MenuItem';
-import AdbIcon from '@mui/icons-material/Adb';
-import Profile from '../Student/Profile';
+import Divider from '@mui/material/Divider';
 import { useNavigate } from 'react-router-dom';
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { useAuth } from '../AuthContext';
-import MailIcon from "@mui/icons-material/Mail";
 import "./Header.css";
-import { Dashboard } from '@mui/icons-material';
-
 
 const pages = ['Products', 'Pricing', 'Blog'];
 const settings = ['Profile', 'My Applications', 'Dashboard', 'Help', 'Logout'];
@@ -31,17 +27,13 @@ function Header() {
   const navigate = useNavigate();
   const { user } = useAuth();
 
-  console.log("Header user 👉", user);
-
-
   useEffect(() => {
     const fetchProfile = async () => {
       try {
         const res = await fetch("https://interviewos.online/api/profile", {
           credentials: "include",
         });
-        const data = await res.json();
-        // Do something with the profile data
+        await res.json();
       } catch (error) {
         console.error("Error fetching profile:", error);
       }
@@ -62,25 +54,24 @@ function Header() {
   };
 
   const handleMockInterview = () => {
+    setAnchorElNav(null);
     if (user?.user.user_id) {
       navigate(`/interview-room/${user.user.user_id}`);
     } else {
       navigate("/login");
     }
-  }
-
-  console.log("User in Header:", user);
+  };
 
   const handleStudentMessages = () => {
+    setAnchorElNav(null);
     if (user?.user.user_id) {
       navigate(`/student/messages/${user.user.user_id}`);
     } else {
       navigate("/login");
     }
-  }
+  };
 
   const handleCloseUserMenu = (item) => {
-
     if (item === "Profile") {
       navigate(`/profile/${user?.user?.user_id}`);
     }
@@ -89,10 +80,10 @@ function Header() {
         const response = await fetch("https://interviewos.online/api/logout", {
           method: "GET",
           credentials: "include",
-        })
+        });
         const data = await response.json();
         console.log("Logout response:", data);
-      }
+      };
       logout();
       navigate("/login");
     }
@@ -116,26 +107,29 @@ function Header() {
   return (
     <AppBar position="fixed" sx={{ backgroundColor: "#b71c1c" }}>
       <Container maxWidth="xl">
-        <Toolbar disableGutters>
+        <Toolbar disableGutters sx={{ gap: { xs: 0.5, md: 1 } }}>
+          {/* Logo + tagline (always visible, shrinks on mobile) */}
           <Box
             sx={{
-              display: { xs: 'none', md: 'flex' },
+              display: 'flex',
               flexDirection: 'column',
-              mr: 2,
+              mr: { xs: 1, md: 2 },
+              flexShrink: 0,
             }}
           >
             <Typography
               variant="h6"
+              noWrap
               sx={{
                 fontFamily: 'monospace',
                 fontWeight: 700,
-                letterSpacing: '.2rem',
+                letterSpacing: { xs: '.05rem', md: '.2rem' },
                 color: 'white',
                 lineHeight: 1,
+                fontSize: { xs: '1rem', sm: '1.25rem' },
               }}
             >
-
-              <i class="fa-solid fa-box"></i>InterviewOS
+              <i className="fa-solid fa-box"></i> InterviewOS
             </Typography>
 
             <Typography
@@ -143,59 +137,15 @@ function Header() {
               sx={{
                 color: '#ffcdd2',
                 fontSize: '12px',
+                display: { xs: 'none', sm: 'block' },
               }}
             >
               Find Jobs & Internship
             </Typography>
           </Box>
 
-          <Box sx={{ flexGrow: 1, display: { xs: 'flex', md: 'none' } }}>
-            <IconButton
-              size="large"
-              aria-label="account of current user"
-              aria-controls="menu-appbar"
-              aria-haspopup="true"
-              onClick={handleOpenNavMenu}
-              color="inherit"
-            >
-              <MenuIcon />
-            </IconButton>
-            <Menu
-              id="menu-appbar"
-              anchorEl={anchorElNav}
-              anchorOrigin={{
-                vertical: 'bottom',
-                horizontal: 'left',
-              }}
-              keepMounted
-              transformOrigin={{
-                vertical: 'top',
-                horizontal: 'left',
-              }}
-              open={Boolean(anchorElNav)}
-              onClose={handleCloseNavMenu}
-              sx={{ display: { xs: 'block', md: 'none' } }}
-            >
-              {pages.map((page) => (
-                <MenuItem key={page} onClick={handleCloseNavMenu}>
-                  <Typography sx={{ textAlign: 'center' }}>{page}</Typography>
-                </MenuItem>
-              ))}
-            </Menu>
-          </Box>
-
-          <Typography
-            variant="h6"
-            sx={{
-              display: { xs: 'flex', md: 'none' },
-              flexGrow: 1,
-              fontWeight: 700,
-              color: 'white',
-            }}
-          >
-            InterviewOS
-          </Typography>
-          <Box sx={{ flexGrow: 1, display: { xs: 'none', md: 'flex' } }}>
+          {/* Desktop nav links */}
+          <Box sx={{ flexGrow: 1, display: { xs: 'none', md: 'flex' }, gap: 1 }}>
             {pages.map((page) => (
               <Button
                 key={page}
@@ -206,6 +156,11 @@ function Header() {
               </Button>
             ))}
           </Box>
+
+          {/* Spacer on mobile so right-side icons stay pushed right */}
+          <Box sx={{ flexGrow: 1, display: { xs: 'flex', md: 'none' } }} />
+
+          {/* Messages button - icon only on mobile */}
           {user?.user?.role !== "interviewer" && (
             <Button
               onClick={handleStudentMessages}
@@ -213,35 +168,51 @@ function Header() {
               sx={{
                 fontWeight: "bold",
                 borderRadius: "8px",
-                marginRight: "16px",
+                marginRight: { xs: 0.5, md: 2 },
                 textTransform: "none",
-                padding: "8px 18px",
+                padding: { xs: "6px 10px", md: "8px 18px" },
+                minWidth: { xs: "auto", md: "64px" },
                 backgroundColor: "#1976d2",
                 "&:hover": {
                   backgroundColor: "#1565c0",
                 },
               }}
             >
-              <i className="fa-regular fa-message"></i> &nbsp;
-              Messages
+              <i className="fa-regular fa-message"></i>
+              <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' }, ml: 1 }}>
+                Messages
+              </Box>
             </Button>
           )}
-          {user ? (<>
-            <Box sx={{ flexGrow: 0 }}>
-              <Button
-                onClick={handleMockInterview}
-                variant="contained"
-                sx={{
-                  fontWeight: "bold",
-                  borderRadius: "8px",
-                  marginRight: "16px",
-                  textTransform: "none",
-                  padding: "8px 18px",
-                  backgroundColor: "Red",
-                }}
-              >
+
+          {/* Start Mock Interview - icon only on mobile */}
+          {user && (
+            <Button
+              onClick={handleMockInterview}
+              variant="contained"
+              sx={{
+                fontWeight: "bold",
+                borderRadius: "8px",
+                marginRight: { xs: 0.5, md: 2 },
+                textTransform: "none",
+                padding: { xs: "6px 10px", md: "8px 18px" },
+                minWidth: { xs: "auto", md: "64px" },
+                backgroundColor: "Red",
+                whiteSpace: 'nowrap',
+              }}
+            >
+              <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' } }}>
                 Start Mock Interview
-              </Button>
+              </Box>
+              <Box component="span" sx={{ display: { xs: 'inline', sm: 'none' } }}>
+                <i className="fa-solid fa-video"></i>
+              </Box>
+            </Button>
+          )}
+
+          {/* Auth state */}
+          {user ? (
+            <Box sx={{ flexGrow: 0 }}>
               <Tooltip title="Open settings">
                 <IconButton onClick={handleOpenUserMenu} sx={{ p: 0 }}>
                   <Avatar alt="Remy Sharp" src="/static/images/avatar/2.jpg" />
@@ -249,7 +220,7 @@ function Header() {
               </Tooltip>
               <Menu
                 sx={{ mt: '45px' }}
-                id="menu-appbar"
+                id="menu-appbar-user"
                 anchorEl={anchorElUser}
                 anchorOrigin={{
                   vertical: 'top',
@@ -261,25 +232,86 @@ function Header() {
                   horizontal: 'right',
                 }}
                 open={Boolean(anchorElUser)}
-                onClose={handleCloseUserMenu}
+                onClose={() => setAnchorElUser(null)}
               >
-
-
                 {settings.map((item) => (
-                  <MenuItem key={item} onClick={() => { handleCloseUserMenu(item) }}>
+                  <MenuItem key={item} onClick={() => handleCloseUserMenu(item)}>
                     <Typography textAlign="center">{item}</Typography>
                   </MenuItem>
                 ))}
               </Menu>
             </Box>
-          </>) : (<>
-            <Button color="inherit" onClick={() => navigate("/signup")}>Signup</Button>
-            <Button color="inherit" onClick={() => navigate("/login")}>Login</Button>
-          </>)}
+          ) : (
+            <Box sx={{ display: 'flex', gap: { xs: 0.5, md: 1 } }}>
+              <Button
+                color="inherit"
+                size="small"
+                onClick={() => navigate("/signup")}
+                sx={{ whiteSpace: 'nowrap' }}
+              >
+                Signup
+              </Button>
+              <Button
+                color="inherit"
+                size="small"
+                onClick={() => navigate("/login")}
+                sx={{ whiteSpace: 'nowrap' }}
+              >
+                Login
+              </Button>
+            </Box>
+          )}
+
+          {/* Mobile hamburger for nav links */}
+          <Box sx={{ display: { xs: 'flex', md: 'none' }, ml: 0.5 }}>
+            <IconButton
+              size="large"
+              aria-label="open navigation menu"
+              aria-controls="menu-appbar-nav"
+              aria-haspopup="true"
+              onClick={handleOpenNavMenu}
+              color="inherit"
+            >
+              <MenuIcon />
+            </IconButton>
+            <Menu
+              id="menu-appbar-nav"
+              anchorEl={anchorElNav}
+              anchorOrigin={{
+                vertical: 'bottom',
+                horizontal: 'right',
+              }}
+              keepMounted
+              transformOrigin={{
+                vertical: 'top',
+                horizontal: 'right',
+              }}
+              open={Boolean(anchorElNav)}
+              onClose={handleCloseNavMenu}
+              sx={{ display: { xs: 'block', md: 'none' } }}
+            >
+              {pages.map((page) => (
+                <MenuItem key={page} onClick={handleCloseNavMenu}>
+                  <Typography sx={{ textAlign: 'center' }}>{page}</Typography>
+                </MenuItem>
+              ))}
+              {(user?.user?.role !== "interviewer" || !user) && <Divider />}
+              {!user && (
+                <MenuItem onClick={() => { setAnchorElNav(null); navigate("/signup"); }}>
+                  <Typography sx={{ textAlign: 'center' }}>Signup</Typography>
+                </MenuItem>
+              )}
+              {!user && (
+                <MenuItem onClick={() => { setAnchorElNav(null); navigate("/login"); }}>
+                  <Typography sx={{ textAlign: 'center' }}>Login</Typography>
+                </MenuItem>
+              )}
+            </Menu>
+          </Box>
         </Toolbar>
       </Container>
     </AppBar>
   );
 }
-export default Header;
 
+export default Header;

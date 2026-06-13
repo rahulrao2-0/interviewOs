@@ -158,7 +158,7 @@ export const scheduleInterview = async (req, res, next) => {
     // logged in interviewer
     const interviewer_id = req.user.id;
 
-    const meeting_link=`http://ec2-13-126-64-8.ap-south-1.compute.amazonaws.com/call/${uuidv4()}`
+    const meeting_link=`https://interviewos.online/call/${uuidv4()}`
     
     // validation
     if (
