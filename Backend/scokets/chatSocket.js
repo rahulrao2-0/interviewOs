@@ -40,7 +40,15 @@ export const chatSocket = (io) => {
       io.to(String(receiverId)).emit("receive_message", payload);
       socket.emit("receive_message", payload);
     });
+    socket.on("join-room", (roomId) => {
+    socket.join(roomId);
+    });
 
+     socket.on("code-change", ({ roomId, code }) => {
+
+    socket.to(roomId).emit("code-update", code);
+
+     });
     socket.on("join_video_room", ({ roomId }) => {
       if (!roomId) return;
 

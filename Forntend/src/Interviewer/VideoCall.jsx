@@ -1,6 +1,8 @@
 import React, { useEffect, useRef, useState } from "react";
 import { io } from "socket.io-client";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
+import Editor from "@monaco-editor/react";
+
 
 import {
   Box,
@@ -30,6 +32,7 @@ const socket = io("https://interviewos.online", {
 });
 
 export default function VideoCall() {
+  const [code, setCode] = useState("// Start coding...");
   const { roomId } = useParams();
 
   const { user } = useAuth();
@@ -97,6 +100,25 @@ export default function VideoCall() {
   };
 
   // ================= CREATE PEER =================
+
+  const handleChange = (value) => {
+  setCode(value);
+
+  socket.emit("code-change", {
+    roomId,
+    code: value
+  });
+};
+
+useEffect(() => {
+  socket.on("code-update", (newCode) => {
+    setCode(newCode);
+  });
+
+  return () => {
+    socket.off("code-update");
+  };
+}, []);
 
   const createPeerConnection = () => {
     const peerConnection =
@@ -363,244 +385,150 @@ export default function VideoCall() {
 
   return (
     <Box
+  sx={{
+    flex: 1,
+    display: "grid",
+    gridTemplateColumns: {
+      xs: "1fr",
+      lg: "1fr 1fr",
+    },
+    gap: "20px",
+    padding: "20px",
+    overflow: "hidden",
+  }}
+>
+  {/* LEFT SIDE */}
+  <Box
+    sx={{
+      display: "flex",
+      flexDirection: "column",
+      gap: "20px",
+    }}
+  >
+    {/* Local Video */}
+    <Box
       sx={{
-        height: "100vh",
-        width: "100%",
-        backgroundColor: "#111827",
-        display: "flex",
-        flexDirection: "column",
+        flex: 1,
+        minHeight: "250px",
+        position: "relative",
+        border: "2px solid white",
+        borderRadius: "16px",
+        overflow: "hidden",
       }}
     >
-      {/* HEADER */}
+      <video
+        ref={localVideoRef}
+        autoPlay
+        muted
+        playsInline
+        style={{
+          width: "100%",
+          height: "100%",
+          objectFit: "cover",
+          background: "black",
+        }}
+      />
 
-      <Box
+      <Typography
         sx={{
-          padding: "15px 25px",
-          backgroundColor: "#1f2937",
+          position: "absolute",
+          bottom: 10,
+          left: 10,
           color: "white",
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          flexWrap: "wrap",
+          background: "rgba(0,0,0,0.6)",
+          px: 1,
+          py: 0.5,
+          borderRadius: 2,
         }}
       >
-        <Box>
-          <Typography
-            variant="h5"
-            fontWeight="bold"
-          >
-            Video Interview
-          </Typography>
-
-          <Typography fontSize="14px">
-            Room ID : {roomId}
-          </Typography>
-        </Box>
-
-        <Box
-          sx={{
-            display: "flex",
-            alignItems: "center",
-            gap: "15px",
-          }}
-        >
-          <Typography fontSize="16px">
-            Username : {username}
-          </Typography>
-
-          {userRef.current && (
-            <Button
-              variant="contained"
-              onClick={handleSend}
-            >
-              Send Room ID
-            </Button>
-          )}
-        </Box>
-      </Box>
-
-      {/* VIDEO SECTION */}
-
-      <Box
-        sx={{
-          flex: 1,
-          display: "flex",
-          flexDirection: {
-            xs: "column",
-            md: "row",
-          },
-          gap: "20px",
-          padding: "20px",
-        }}
-      >
-        {/* LOCAL VIDEO */}
-
-        <Box
-          sx={{
-            flex: 1,
-            position: "relative",
-            border: "2px solid white",
-            borderRadius: "16px",
-            overflow: "hidden",
-          }}
-        >
-          <video
-            ref={localVideoRef}
-            autoPlay
-            muted
-            playsInline
-            style={{
-              width: "100%",
-              height: "100%",
-              objectFit: "cover",
-              backgroundColor: "black",
-            }}
-          />
-
-          <Typography
-            sx={{
-              position: "absolute",
-              bottom: "15px",
-              left: "15px",
-              backgroundColor:
-                "rgba(0,0,0,0.6)",
-              color: "white",
-              padding: "6px 14px",
-              borderRadius: "20px",
-            }}
-          >
-            You
-          </Typography>
-        </Box>
-
-        {/* REMOTE VIDEO */}
-
-        <Box
-          sx={{
-            flex: 1,
-            position: "relative",
-            border: "2px solid white",
-            borderRadius: "16px",
-            overflow: "hidden",
-          }}
-        >
-          <video
-            ref={remoteVideoRef}
-            autoPlay
-            playsInline
-            style={{
-              width: "100%",
-              height: "100%",
-              objectFit: "cover",
-              backgroundColor: "black",
-            }}
-          />
-
-          <Typography
-            sx={{
-              position: "absolute",
-              bottom: "15px",
-              left: "15px",
-              backgroundColor:
-                "rgba(0,0,0,0.6)",
-              color: "white",
-              padding: "6px 14px",
-              borderRadius: "20px",
-            }}
-          >
-            Candidate
-          </Typography>
-        </Box>
-      </Box>
-
-      {/* CONTROLS */}
-
-      <Box
-        sx={{
-          padding: "20px",
-          backgroundColor: "#1f2937",
-          display: "flex",
-          justifyContent: "center",
-          gap: "20px",
-        }}
-      >
-        <IconButton
-          onClick={handleToggleMic}
-          sx={{
-            backgroundColor: "white",
-          }}
-        >
-          {micOn ? <Mic /> : <MicOff />}
-        </IconButton>
-
-        <IconButton
-          onClick={handleToggleCamera}
-          sx={{
-            backgroundColor: "white",
-          }}
-        >
-          {cameraOn ? (
-            <Videocam />
-          ) : (
-            <VideocamOff />
-          )}
-        </IconButton>
-
-        <Button
-          variant="contained"
-          color="error"
-          startIcon={<CallEnd />}
-          onClick={handleEndCall}
-          sx={{
-            borderRadius: "20px",
-            paddingX: "20px",
-          }}
-        >
-          End Call
-        </Button>
-      </Box>
-
-      {/* INBOX DIALOG */}
-
-      <Dialog
-        open={openInbox}
-        onClose={() =>
-          setOpenInbox(false)
-        }
-        fullWidth
-        maxWidth="sm"
-      >
-        <DialogTitle>
-          Select Candidate
-        </DialogTitle>
-
-        <DialogContent>
-          <List>
-            {inboxUsers?.map((user) => (
-              <ListItem
-                key={user.user_id}
-                secondaryAction={
-                  <Button
-                    variant="contained"
-                    onClick={() =>
-                      handleSendRoomId(
-                        user.user_id
-                      )
-                    }
-                  >
-                    Send
-                  </Button>
-                }
-              >
-                <ListItemText
-                  primary={user.username}
-                  secondary={user.email}
-                />
-              </ListItem>
-            ))}
-          </List>
-        </DialogContent>
-      </Dialog>
+        You
+      </Typography>
     </Box>
-  );
+
+    {/* Remote Video */}
+    <Box
+      sx={{
+        flex: 1,
+        minHeight: "250px",
+        position: "relative",
+        border: "2px solid white",
+        borderRadius: "16px",
+        overflow: "hidden",
+      }}
+    >
+      <video
+        ref={remoteVideoRef}
+        autoPlay
+        playsInline
+        style={{
+          width: "100%",
+          height: "100%",
+          objectFit: "cover",
+          background: "black",
+        }}
+      />
+
+      <Typography
+        sx={{
+          position: "absolute",
+          bottom: 10,
+          left: 10,
+          color: "white",
+          background: "rgba(0,0,0,0.6)",
+          px: 1,
+          py: 0.5,
+          borderRadius: 2,
+        }}
+      >
+        Candidate
+      </Typography>
+    </Box>
+  </Box>
+
+  {/* RIGHT SIDE CODE EDITOR */}
+  <Box
+    sx={{
+      display: "flex",
+      flexDirection: "column",
+      borderRadius: "16px",
+      overflow: "hidden",
+      border: "1px solid #374151",
+      background: "#111827",
+    }}
+  >
+    {/* Editor Header */}
+    <Box
+      sx={{
+        p: 2,
+        background: "#1f2937",
+        display: "flex",
+        justifyContent: "space-between",
+        alignItems: "center",
+      }}
+    >
+      <Typography color="white">
+        Coding Round
+      </Typography>
+
+      <Button
+        variant="contained"
+        color="success"
+      >
+        Run Code
+      </Button>
+    </Box>
+
+    {/* Monaco Editor */}
+    <Editor
+      height="100%"
+      defaultLanguage="javascript"
+      value={code}
+      onChange={(value) =>
+        setCode(value || "")
+      }
+      theme="vs-dark"
+    />
+  </Box>
+</Box>
+  )
 }
