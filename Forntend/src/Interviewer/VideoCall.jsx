@@ -520,13 +520,11 @@ useEffect(() => {
 
     {/* Monaco Editor */}
     <Editor
-      height="100%"
-      defaultLanguage="javascript"
-      value={code}
-      onChange={(value) =>
-        setCode(value || "")
-      }
-      theme="vs-dark"
+     height="100%"
+     defaultLanguage="javascript"
+    value={code}
+    onChange={handleChange}
+    theme="vs-dark"
     />
   </Box>
 </Box>
