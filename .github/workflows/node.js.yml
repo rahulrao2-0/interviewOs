@@ -19,14 +19,28 @@ jobs:
           node-version: 22
 
       - name: Install Dependencies
-        run: npm install
         working-directory: ./Forntend
+        run: npm install
 
       - name: Build Frontend
-        run: npm run build
         working-directory: ./Forntend
+        run: npm run build
 
-      # SSH STEP (clean old build)
+      - name: Verify Build
+        run: |
+          echo "Current Directory:"
+          pwd
+
+          echo "Repository Contents:"
+          ls -la
+
+          echo "Frontend Folder:"
+          ls -la Forntend
+
+          echo "Dist Folder:"
+          ls -la Forntend/dist
+
+      # Remove old build on EC2
       - name: Clean old dist on server
         uses: appleboy/ssh-action@v1.0.3
         with:
@@ -34,9 +48,10 @@ jobs:
           username: ${{ secrets.EC2_HOST }}
           key: ${{ secrets.EC2_KEY }}
           script: |
+            mkdir -p /home/ubuntu/frontend/Forntend
             rm -rf /home/ubuntu/frontend/Forntend/dist
 
-      # SCP DEPLOY STEP
+      # Upload build
       - name: Deploy via SCP
         uses: appleboy/scp-action@v0.1.7
         with:
@@ -44,5 +59,9 @@ jobs:
           username: ${{ secrets.EC2_HOST }}
           key: ${{ secrets.EC2_KEY }}
           source: "Forntend/dist/*"
-          target: "/home/ubuntu/frontend/Forntend/dist"
+          target: "/home/ubuntu/frontend/Forntend"
           overwrite: true
+          debug: true
+
+      - name: Deployment Complete
+        run: echo "Frontend deployed successfully."
