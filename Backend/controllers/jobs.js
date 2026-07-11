@@ -4,6 +4,7 @@ dotenv.config({ path: "./.env" });
 import ExpressError from "../ExpressError.js";
 import { PutObjectCommand } from "@aws-sdk/client-s3";
 import s3 from "../utils/S3.js";
+import { queryWithRetry } from "../utils/queryWithRetry.js";
 
 import redis from "../Redis.js";
 
@@ -15,7 +16,6 @@ export const allJobs = async (req, res, next) => {
   try {
     const page = Number(req.query.page) || 1;
     const limit = Number(req.query.limit) || 5;
-
     const offset = (page - 1) * limit;
 
     const cacheKey = `alljobs:page:${page}:limit:${limit}`;
@@ -30,8 +30,9 @@ export const allJobs = async (req, res, next) => {
 
     console.log("All Jobs Cache Miss");
 
-    const [jobs] = await db.execute(`
-      SELECT
+    const [jobs] = await queryWithRetry(
+      db,
+      `SELECT
         j.*,
         u.username,
         u.email
@@ -39,14 +40,14 @@ export const allJobs = async (req, res, next) => {
       LEFT JOIN users u
         ON j.posted_by = u.user_id
       ORDER BY j.created_at DESC
-      LIMIT ${limit}
-      OFFSET ${offset}
-    `);
+      LIMIT ? OFFSET ?`,
+      [limit, offset]
+    );
 
-    const [[{ total }]] = await db.execute(`
-      SELECT COUNT(*) AS total
-      FROM jobs
-    `);
+    const [[{ total }]] = await queryWithRetry(
+      db,
+      `SELECT COUNT(*) AS total FROM jobs`
+    );
 
     const responseData = {
       success: true,
@@ -57,15 +58,9 @@ export const allJobs = async (req, res, next) => {
     };
 
     // Cache for 10 minutes
-    await redis.set(
-      cacheKey,
-      JSON.stringify(responseData),
-      "EX",
-      600
-    );
+    await redis.set(cacheKey, JSON.stringify(responseData), "EX", 600);
 
     return res.status(200).json(responseData);
-
   } catch (err) {
     console.error("All Jobs Error:", err);
 
