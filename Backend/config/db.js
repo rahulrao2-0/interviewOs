@@ -1,6 +1,12 @@
 import mysql from "mysql2/promise";
 import dotenv from "dotenv";
+import fs from "fs";
+import path from "path";
+import { fileURLToPath } from "url";
+
 dotenv.config();
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 const db = mysql.createPool({
   host: process.env.DB_HOST,
@@ -11,21 +17,18 @@ const db = mysql.createPool({
   waitForConnections: true,
   connectionLimit: 10,
   queueLimit: 0,
-
-  // --- Prevents idle connections from being silently dropped ---
   enableKeepAlive: true,
-  keepAliveInitialDelay: 10000, // 10s
-
-  // --- Avoid hanging forever on a dead connection ---
+  keepAliveInitialDelay: 10000,
   connectTimeout: 10000,
+  ssl: {
+    ca: fs.readFileSync(path.join(__dirname, "..", "global-bundle.pem")),
+  },
 });
 
-// Log pool-level errors instead of letting them crash silently
 db.on("error", (err) => {
   console.error("MySQL Pool Error:", err.code, err.message);
 });
 
-// Test connection on startup
 try {
   const connection = await db.getConnection();
   console.log("MySQL Pool Connected ✅");
