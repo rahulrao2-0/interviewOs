@@ -14,8 +14,8 @@ import SkillMatchingEmailQueue from "../queues/SkillMatchingEmailQueue.js";
 
 export const allJobs = async (req, res, next) => {
   try {
-    const page = Number(req.query.page) || 1;
-    const limit = Number(req.query.limit) || 5;
+    const page = Math.max(1, parseInt(req.query.page) || 1);
+    const limit = Math.max(1, parseInt(req.query.limit) || 5);
     const offset = (page - 1) * limit;
 
     const cacheKey = `alljobs:page:${page}:limit:${limit}`;
@@ -40,8 +40,7 @@ export const allJobs = async (req, res, next) => {
       LEFT JOIN users u
         ON j.posted_by = u.user_id
       ORDER BY j.created_at DESC
-      LIMIT ? OFFSET ?`,
-      [limit, offset]
+      LIMIT ${limit} OFFSET ${offset}`
     );
 
     const [[{ total }]] = await queryWithRetry(
