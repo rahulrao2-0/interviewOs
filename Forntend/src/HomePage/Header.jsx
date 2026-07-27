@@ -11,6 +11,7 @@ import Avatar from '@mui/material/Avatar';
 import Button from '@mui/material/Button';
 import Tooltip from '@mui/material/Tooltip';
 import MenuItem from '@mui/material/MenuItem';
+import CircularProgress from '@mui/material/CircularProgress';
 import Divider from '@mui/material/Divider';
 import { useNavigate } from 'react-router-dom';
 import { useEffect } from 'react';
@@ -25,7 +26,7 @@ function Header() {
   const [anchorElUser, setAnchorElUser] = React.useState(null);
 
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, loading } = useAuth();
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -105,9 +106,18 @@ function Header() {
   };
 
   return (
-    <AppBar position="fixed" sx={{ backgroundColor: "#b71c1c" }}>
+    <AppBar
+      position="sticky"
+      elevation={0}
+      sx={{
+        background: "linear-gradient(135deg, #0f172a 0%, #1e293b 100%)",
+        backdropFilter: "blur(12px)",
+        borderBottom: "1px solid rgba(255, 255, 255, 0.08)",
+        boxShadow: "0 4px 20px rgba(0, 0, 0, 0.15)",
+      }}
+    >
       <Container maxWidth="xl">
-        <Toolbar disableGutters sx={{ gap: { xs: 0.5, md: 1 } }}>
+        <Toolbar disableGutters sx={{ gap: { xs: 0.5, md: 1 }, py: 0.5 }}>
           {/* Logo + tagline (always visible, shrinks on mobile) */}
           <Box
             sx={{
@@ -160,87 +170,90 @@ function Header() {
           {/* Spacer on mobile so right-side icons stay pushed right */}
           <Box sx={{ flexGrow: 1, display: { xs: 'flex', md: 'none' } }} />
 
-          {/* Messages button - icon only on mobile */}
-          {user?.user?.role !== "interviewer" && (
-            <Button
-              onClick={handleStudentMessages}
-              variant="contained"
-              sx={{
-                fontWeight: "bold",
-                borderRadius: "8px",
-                marginRight: { xs: 0.5, md: 2 },
-                textTransform: "none",
-                padding: { xs: "6px 10px", md: "8px 18px" },
-                minWidth: { xs: "auto", md: "64px" },
-                backgroundColor: "#1976d2",
-                "&:hover": {
-                  backgroundColor: "#1565c0",
-                },
-              }}
-            >
-              <i className="fa-regular fa-message"></i>
-              <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' }, ml: 1 }}>
-                Messages
-              </Box>
-            </Button>
-          )}
+          {/* Action Buttons & Auth State */}
+          {loading ? (
+            <CircularProgress size={24} color="inherit" />
+          ) : user ? (
+            <>
+              {/* Messages button - visible only when logged in and role is not interviewer */}
+              {user?.user?.role !== "interviewer" && (
+                <Button
+                  onClick={handleStudentMessages}
+                  variant="contained"
+                  sx={{
+                    fontWeight: "bold",
+                    borderRadius: "8px",
+                    marginRight: { xs: 0.5, md: 2 },
+                    textTransform: "none",
+                    padding: { xs: "6px 10px", md: "8px 18px" },
+                    minWidth: { xs: "auto", md: "64px" },
+                    backgroundColor: "#1976d2",
+                    "&:hover": {
+                      backgroundColor: "#1565c0",
+                    },
+                  }}
+                >
+                  <i className="fa-regular fa-message"></i>
+                  <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' }, ml: 1 }}>
+                    Messages
+                  </Box>
+                </Button>
+              )}
 
-          {/* Start Mock Interview - icon only on mobile */}
-          {user && (
-            <Button
-              onClick={handleMockInterview}
-              variant="contained"
-              sx={{
-                fontWeight: "bold",
-                borderRadius: "8px",
-                marginRight: { xs: 0.5, md: 2 },
-                textTransform: "none",
-                padding: { xs: "6px 10px", md: "8px 18px" },
-                minWidth: { xs: "auto", md: "64px" },
-                backgroundColor: "Red",
-                whiteSpace: 'nowrap',
-              }}
-            >
-              <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' } }}>
-                Start Mock Interview
-              </Box>
-              <Box component="span" sx={{ display: { xs: 'inline', sm: 'none' } }}>
-                <i className="fa-solid fa-video"></i>
-              </Box>
-            </Button>
-          )}
-
-          {/* Auth state */}
-          {user ? (
-            <Box sx={{ flexGrow: 0 }}>
-              <Tooltip title="Open settings">
-                <IconButton onClick={handleOpenUserMenu} sx={{ p: 0 }}>
-                  <Avatar alt="Remy Sharp" src="/static/images/avatar/2.jpg" />
-                </IconButton>
-              </Tooltip>
-              <Menu
-                sx={{ mt: '45px' }}
-                id="menu-appbar-user"
-                anchorEl={anchorElUser}
-                anchorOrigin={{
-                  vertical: 'top',
-                  horizontal: 'right',
+              {/* Start Mock Interview - visible only when logged in */}
+              <Button
+                onClick={handleMockInterview}
+                variant="contained"
+                sx={{
+                  fontWeight: "bold",
+                  borderRadius: "8px",
+                  marginRight: { xs: 0.5, md: 2 },
+                  textTransform: "none",
+                  padding: { xs: "6px 10px", md: "8px 18px" },
+                  minWidth: { xs: "auto", md: "64px" },
+                  backgroundColor: "Red",
+                  whiteSpace: 'nowrap',
                 }}
-                keepMounted
-                transformOrigin={{
-                  vertical: 'top',
-                  horizontal: 'right',
-                }}
-                open={Boolean(anchorElUser)}
-                onClose={() => setAnchorElUser(null)}
               >
-                {settings.map((item) => (
-                  <MenuItem key={item} onClick={() => handleCloseUserMenu(item)}>
-                    <Typography textAlign="center">{item}</Typography>
-                  </MenuItem>
-                ))}
-              </Menu>
-            </Box>
+                <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' } }}>
+                  Start Mock Interview
+                </Box>
+                <Box component="span" sx={{ display: { xs: 'inline', sm: 'none' } }}>
+                  <i className="fa-solid fa-video"></i>
+                </Box>
+              </Button>
+
+              {/* User Account Menu */}
+              <Box sx={{ flexGrow: 0 }}>
+                <Tooltip title="Open settings">
+                  <IconButton onClick={handleOpenUserMenu} sx={{ p: 0 }}>
+                    <Avatar alt="Remy Sharp" src="/static/images/avatar/2.jpg" />
+                  </IconButton>
+                </Tooltip>
+                <Menu
+                  sx={{ mt: '45px' }}
+                  id="menu-appbar-user"
+                  anchorEl={anchorElUser}
+                  anchorOrigin={{
+                    vertical: 'top',
+                    horizontal: 'right',
+                  }}
+                  keepMounted
+                  transformOrigin={{
+                    vertical: 'top',
+                    horizontal: 'right',
+                  }}
+                  open={Boolean(anchorElUser)}
+                  onClose={() => setAnchorElUser(null)}
+                >
+                  {settings.map((item) => (
+                    <MenuItem key={item} onClick={() => handleCloseUserMenu(item)}>
+                      <Typography textAlign="center">{item}</Typography>
+                    </MenuItem>
+                  ))}
+                </Menu>
+              </Box>
+            </>
           ) : (
             <Box sx={{ display: 'flex', gap: { xs: 0.5, md: 1 } }}>
               <Button

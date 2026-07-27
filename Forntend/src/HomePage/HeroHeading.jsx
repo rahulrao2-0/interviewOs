@@ -5,8 +5,8 @@ export default function HeroHeading() {
     <Box
       sx={{
         textAlign: "center",
-        mt: 2,
-        mb: 2,
+        mt: 5,
+        mb: 4,
         px: 2,
       }}
     >
@@ -14,30 +14,42 @@ export default function HeroHeading() {
       <Typography
         variant="h3"
         sx={{
-          fontSize:{
-            xs: "1.8rem", // mobile
-           sm: "2.4rem",
-           md: "3rem",
+          fontSize: {
+            xs: "2.2rem",
+            sm: "3.2rem",
+            md: "4rem",
           },
-          fontWeight: "bold",
-          color: "#263238",
+          fontWeight: 800,
+          letterSpacing: "-0.02em",
+          color: "#0f172a",
+          lineHeight: 1.2,
         }}
       >
         Find Your Next{" "}
-        <span style={{ color: "#d32f2f" }}>Opportunity</span>
+        <span
+          style={{
+            background: "linear-gradient(135deg, #ef4444 0%, #dc2626 100%)",
+            WebkitBackgroundClip: "text",
+            WebkitTextFillColor: "transparent",
+          }}
+        >
+          Opportunity
+        </span>
       </Typography>
 
       {/* Subtitle */}
       <Typography
         variant="h6"
         sx={{
-          fontSize:{
-            xs:"1rem"
-
+          fontSize: {
+            xs: "1rem",
+            sm: "1.15rem",
           },
-          
-          color: "gray",
-          fontWeight: 400,
+          mt: 1.5,
+          color: "#64748b",
+          fontWeight: 500,
+          maxWidth: "600px",
+          mx: "auto",
         }}
       >
         Search jobs, internships & placement opportunities

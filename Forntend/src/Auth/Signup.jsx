@@ -182,7 +182,7 @@ export default function Signup() {
           </div>
 
           {/* Google OAuth */}
-          <a className="google-btn" href="/auth/google">
+          <a className="google-btn" href="https://interviewos.online/auth/google">
             <img
               src="https://www.svgrepo.com/show/475656/google-color.svg"
               alt="Google"

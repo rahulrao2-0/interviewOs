@@ -8,12 +8,29 @@ import { useState } from "react"
 export default function MainContainer() {
   const [filterParams, setFilterParams] = useState({})
 
+  const handleSearch = (searchData) => {
+    setFilterParams((prev) => {
+      const updated = { ...prev };
+      if (searchData.query) {
+        updated.search = searchData.query;
+      } else {
+        delete updated.search;
+      }
+      if (searchData.location) {
+        updated.location = searchData.location;
+      } else {
+        delete updated.location;
+      }
+      return updated;
+    });
+  };
+
   return (
     <div className="container">
       <HeroHeading />
-      <SearchBar />
+      <SearchBar onSearch={handleSearch} />
       <div className="filters_Posts">
-        <Filters onFilterChange={(params) => setFilterParams(params)} />
+        <Filters onFilterChange={(params) => setFilterParams((prev) => ({ ...prev, ...params }))} />
         <AllJobs filterParams={filterParams} />
       </div>
     </div>

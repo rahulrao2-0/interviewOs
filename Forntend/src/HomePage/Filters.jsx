@@ -288,62 +288,65 @@ export default function Filters({ onFilterChange }) {
       <Box
         sx={{
           display: { xs: "none", md: "block" },
-          width: 250,
-          p: 2,
-          bgcolor: "white",
-          borderRadius: 2,
-          boxShadow: 2,
+          width: 260,
+          p: 2.5,
+          bgcolor: "#ffffff",
+          borderRadius: "16px",
+          boxShadow: "0 10px 30px rgba(0, 0, 0, 0.04)",
+          border: "1px solid rgba(226, 232, 240, 0.8)",
         }}
       >
-        <Typography variant="h6" sx={{ mb: 2 }}>
+        <Typography variant="h6" sx={{ mb: 2, fontWeight: 700, color: "#0f172a", fontSize: "1.1rem" }}>
           Filters
         </Typography>
 
         {/* Skills */}
-        <Typography variant="subtitle1">Skills</Typography>
+        <Typography variant="subtitle2" sx={{ fontWeight: 600, color: "#334155" }}>Skills</Typography>
         <FormGroup>
           {filterOptions.Skills.map((skill) => (
             <FormControlLabel
               key={skill}
-              label={skill}
+              label={<Typography sx={{ fontSize: "14px", color: "#475569" }}>{skill}</Typography>}
               control={
                 <Checkbox
                   size="small"
                   checked={filters.skills.includes(skill)}
                   onChange={(e) => handleCheckbox("skills", skill, e.target.checked)}
+                  sx={{ color: "#94a3b8", "&.Mui-checked": { color: "#ef4444" } }}
                 />
               }
             />
           ))}
         </FormGroup>
 
-        <Divider sx={{ my: 2 }} />
+        <Divider sx={{ my: 2, borderColor: "#f1f5f9" }} />
 
         {/* Job Type */}
-        <Typography variant="subtitle1">Job Type</Typography>
+        <Typography variant="subtitle2" sx={{ fontWeight: 600, color: "#334155" }}>Job Type</Typography>
         <FormGroup>
           {["Full-time", "Part-time", "Internship", "Contract"].map((type) => (
             <FormControlLabel
               key={type}
-              label={type}
+              label={<Typography sx={{ fontSize: "14px", color: "#475569" }}>{type}</Typography>}
               control={
                 <Checkbox
                   size="small"
                   checked={filters.job_type.includes(type)}
                   onChange={(e) => handleCheckbox("job_type", type, e.target.checked)}
+                  sx={{ color: "#94a3b8", "&.Mui-checked": { color: "#ef4444" } }}
                 />
               }
             />
           ))}
         </FormGroup>
 
-        <Divider sx={{ my: 2 }} />
+        <Divider sx={{ my: 2, borderColor: "#f1f5f9" }} />
 
         {/* Experience */}
-        <Typography variant="subtitle1" gutterBottom>
+        <Typography variant="subtitle2" sx={{ fontWeight: 600, color: "#334155" }}>
           Experience
         </Typography>
-        <Typography variant="caption" sx={{ color: "#6B7280" }}>
+        <Typography variant="caption" sx={{ color: "#ef4444", fontWeight: 600 }}>
           {expLabels[expSlider]}
         </Typography>
         <Slider
@@ -355,10 +358,10 @@ export default function Filters({ onFilterChange }) {
           max={4}
           valueLabelDisplay="auto"
           valueLabelFormat={(v) => expLabels[v]}
-          sx={{ color: "#1976d2" }}
+          sx={{ color: "#ef4444" }}
         />
 
-        <Divider sx={{ my: 2 }} />
+        <Divider sx={{ my: 2, borderColor: "#f1f5f9" }} />
 
         {/* Apply / Clear */}
         <Button
@@ -366,11 +369,13 @@ export default function Filters({ onFilterChange }) {
           variant="contained"
           onClick={handleApply}
           sx={{
-            bgcolor: "#1976d2",
-            "&:hover": { bgcolor: "#1259a7" },
+            background: "linear-gradient(135deg, #0f172a 0%, #1e293b 100%)",
+            borderRadius: "10px",
+            "&:hover": { background: "#020617" },
             mb: 1,
             textTransform: "none",
             fontWeight: 700,
+            py: 1,
           }}
         >
           Apply Filters
@@ -380,7 +385,7 @@ export default function Filters({ onFilterChange }) {
           fullWidth
           variant="text"
           onClick={handleClear}
-          sx={{ color: "#DC2626", textTransform: "none" }}
+          sx={{ color: "#ef4444", textTransform: "none", fontWeight: 600, fontSize: "13px" }}
         >
           Clear All
         </Button>

@@ -95,14 +95,19 @@ export default function AllJobs({ filterParams = {} }) {
             <Card
               key={job.job_id}
               sx={{
-                flex: "1 1 350px",
-                borderRadius: 3,
-                boxShadow: 3,
-                mb: 2,
-                borderLeft: "5px solid #d32f2f",
+                borderRadius: "16px",
+                boxShadow: "0 4px 20px rgba(0, 0, 0, 0.03)",
+                mb: 2.5,
+                border: "1px solid rgba(226, 232, 240, 0.8)",
+                transition: "all 0.25s ease-in-out",
+                "&:hover": {
+                  boxShadow: "0 10px 25px rgba(0, 0, 0, 0.08)",
+                  transform: "translateY(-2px)",
+                  borderColor: "rgba(239, 68, 68, 0.3)",
+                },
               }}
             >
-              <CardContent>
+              <CardContent sx={{ p: 3 }}>
                 <Box
                   sx={{
                     display: "flex",
@@ -113,31 +118,60 @@ export default function AllJobs({ filterParams = {} }) {
                 >
                   {/* LEFT */}
                   <Box sx={{ display: "flex", gap: 2 }}>
-                    <Avatar sx={{ bgcolor: "#e3f2fd", color: "#d32f2f" }}>
+                    <Avatar
+                      sx={{
+                        width: 52,
+                        height: 52,
+                        background: "linear-gradient(135deg, #fee2e2 0%, #fecaca 100%)",
+                        color: "#ef4444",
+                        fontWeight: 700,
+                        fontSize: "1.2rem",
+                        borderRadius: "14px",
+                      }}
+                    >
                       {job.job_name?.[0]}
                     </Avatar>
 
                     <Box>
-                      <Typography variant="h6" fontWeight="bold">
+                      <Typography variant="h6" fontWeight="700" sx={{ color: "#0f172a", fontSize: "1.1rem" }}>
                         {job.job_name}
                       </Typography>
 
-                      <Typography variant="body2" color="text.secondary">
+                      <Typography variant="body2" sx={{ color: "#64748b", fontWeight: 500, mt: 0.2 }}>
                         {job.company}
                       </Typography>
 
-                      <Box sx={{ mt: 1, display: "flex", gap: 1 }}>
-                        <Chip label={job.job_type} size="small" />
+                      <Box sx={{ mt: 1.5, display: "flex", gap: 1, alignItems: "center" }}>
+                        <Chip
+                          label={job.job_type}
+                          size="small"
+                          sx={{
+                            bgcolor: "#f1f5f9",
+                            color: "#334155",
+                            fontWeight: 600,
+                            borderRadius: "6px",
+                          }}
+                        />
+                        <Typography variant="caption" sx={{ color: "#94a3b8", fontWeight: 500 }}>
+                          {job.experience} Yrs Exp
+                        </Typography>
                       </Box>
 
-                      <Typography variant="body2" sx={{ mt: 1 }}>
-                        {job.experience} Yrs Exp • {job.job_type}
-                      </Typography>
-
                       {/* ← show skills on card too */}
-                      <Box sx={{ mt: 1, display: "flex", gap: 0.5, flexWrap: "wrap" }}>
+                      <Box sx={{ mt: 1.5, display: "flex", gap: 0.8, flexWrap: "wrap" }}>
                         {getSkills(job.skills).slice(0, 3).map((skill, i) => (
-                          <Chip key={i} label={skill} size="small" variant="outlined" />
+                          <Chip
+                            key={i}
+                            label={skill}
+                            size="small"
+                            variant="outlined"
+                            sx={{
+                              borderColor: "#e2e8f0",
+                              color: "#475569",
+                              fontSize: "12px",
+                              borderRadius: "6px",
+                            }}
+                          />
                         ))}
                       </Box>
                     </Box>
@@ -148,9 +182,13 @@ export default function AllJobs({ filterParams = {} }) {
                     sx={{
                       textAlign: { xs: "left", md: "right" },
                       width: { xs: "100%", md: "auto" },
+                      display: "flex",
+                      flexDirection: "column",
+                      justifyContent: "space-between",
+                      alignItems: { xs: "flex-start", md: "flex-end" },
                     }}
                   >
-                    <Typography color="error" fontWeight="bold">
+                    <Typography fontWeight="800" sx={{ color: "#ef4444", fontSize: "1.1rem" }}>
                       ₹{job.min_salary} – ₹{job.max_salary}
                     </Typography>
 
@@ -160,8 +198,17 @@ export default function AllJobs({ filterParams = {} }) {
                       onClick={() => handleOpenDialog(job)}
                       sx={{
                         mt: 2,
-                        backgroundColor: "#d32f2f",
-                        "&:hover": { backgroundColor: "#b71c1c" },
+                        background: "linear-gradient(135deg, #ef4444 0%, #dc2626 100%)",
+                        borderRadius: "10px",
+                        textTransform: "none",
+                        fontWeight: 700,
+                        px: 3,
+                        py: 1,
+                        boxShadow: "0 4px 12px rgba(239, 68, 68, 0.25)",
+                        "&:hover": {
+                          background: "linear-gradient(135deg, #dc2626 0%, #b91c1c 100%)",
+                          boxShadow: "0 6px 16px rgba(239, 68, 68, 0.4)",
+                        },
                       }}
                     >
                       Apply Now
