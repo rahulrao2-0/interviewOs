@@ -147,9 +147,41 @@ export default function VideoCall() {
     if (track) { track.enabled = !track.enabled; setCameraOn(track.enabled); }
   };
 
-  const handleRunCode = () => {
-    setOutput(`Running ${language}...\n> [Execution output would appear here]`);
+  const handleRunCode = async () => {
+    setOutput(`Running ${language}...\n`);
     setOutputVisible(true);
+    
+    const COMPILER_MAP = {
+      javascript: "nodejs-20.17.0",
+      python: "cpython-3.12.7",
+      java: "openjdk-jdk-22+36",
+      cpp: "gcc-13.2.0",
+      typescript: "typescript-5.6.2",
+      go: "go-1.23.2",
+    };
+
+    const compiler = COMPILER_MAP[language];
+    if (!compiler) {
+      setOutput(`Error: Unsupported language ${language}\n`);
+      return;
+    }
+
+    try {
+      const response = await fetch("https://wandbox.org/api/compile.json", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ code, compiler }),
+      });
+      
+      const data = await response.json();
+      let out = "";
+      if (data.compiler_message) out += data.compiler_message;
+      if (data.program_message) out += data.program_message;
+      
+      setOutput(out || "No output");
+    } catch (error) {
+      setOutput(`Execution failed: ${error.message}`);
+    }
   };
 
   const handleSend = async () => {
