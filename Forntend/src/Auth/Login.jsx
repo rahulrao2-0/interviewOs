@@ -148,16 +148,16 @@ export default function Login() {
           {/* Form */}
           <form className="login-form" onSubmit={handleSubmit} noValidate>
 
-            {/* Email */}
+            {/* Username or Email */}
             <div className="field-group">
-              <label className="field-label" htmlFor="username">Username</label>
+              <label className="field-label" htmlFor="username">Username or Email</label>
               <div className="input-wrapper">
                 <input
                   className="field-input"
                   id="username"
                   name="username"
-                  type="username"
-                  placeholder="Enter username"
+                  type="text"
+                  placeholder="Enter username or email"
                   value={form.username}
                   onChange={handleChange}
                   autoComplete="username"

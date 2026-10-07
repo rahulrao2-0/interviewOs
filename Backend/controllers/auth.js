@@ -34,10 +34,13 @@ export const Signup = async (req, res, next) => {
 
     if (existing.length > 0) {
       const taken = existing[0];
-      if (taken.username === username.trim()) {
+      if (taken.username.toLowerCase() === username.trim().toLowerCase()) {
         return next(new ExpressError(409, "Username already taken"));
       }
-      return next(new ExpressError(409, "Email already exists"));
+      if (taken.email.toLowerCase() === email.trim().toLowerCase()) {
+        return next(new ExpressError(409, "Email already exists"));
+      }
+      return next(new ExpressError(409, "Username or Email already exists"));
     }
 
     // ✅ Hash AFTER duplicate check
@@ -113,10 +116,10 @@ export const Login = async (req, res, next) => {
 
     // Find user
     const [users] = await db.execute(
-      `SELECT user_id, username, password, role, verify
+      `SELECT user_id, username, email, password, role, verify
        FROM users 
-       WHERE username = ?`,
-      [username]
+       WHERE username = ? OR email = ?`,
+      [username, username]
     );
 
     if (users.length === 0) {
